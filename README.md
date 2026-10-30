@@ -20,4 +20,4 @@ As disciplinas seguem o edital (`window.EDITAL` no início de `questoes.js`): 24
 
 Edite `questoes.js` seguindo o formato dos blocos existentes (`correta`: 0 = A ... 4 = E).
 
-As questões iniciais são inéditas, escritas no estilo VUNESP. Confira sempre a lei seca atualizada.
+O banco tem 396 questões de provas anteriores da VUNESP (2024 e 2025), com texto e gabarito oficiais (versão 1): TJSP (Escrevente, Contador, Analista de Sistemas), MPSP (Analista Jurídico, Analista de Promotoria II), Prefeitura de Campinas (Procurador), ARES-PCJ (Procurador Jurídico) e SPCine (Analista Jurídico I). Só entram disciplinas do edital AJAJ. Ficaram de fora questões anuladas, questões com figura e temas fora do edital (Direito do Trabalho, Empresarial, Infância, Eleitoral, legislação interna etc.).

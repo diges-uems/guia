@@ -108,7 +108,10 @@ button:focus-visible, a:focus-visible, select:focus-visible, textarea:focus-visi
 .chip { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--pen-soft); color: var(--pen); font-weight: 600; font-size: 12px; }
 .chip.ok { background: var(--ok-soft); color: var(--ok); }
 .chip.err { background: var(--err-soft); color: var(--err); }
-.enun { font: 17px/1.6 var(--f-text); margin: 0; text-wrap: pretty; }
+.enun { font: 17px/1.6 var(--f-text); margin: 0; text-wrap: pretty; white-space: pre-line; overflow-wrap: anywhere; }
+details.texto { border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+details.texto summary { padding: 10px 12px; font-size: 14px; color: var(--muted); }
+.textobase { padding: 0 14px 14px; font: 15px/1.65 var(--f-text); white-space: pre-line; max-height: 55vh; overflow-y: auto; overflow-wrap: anywhere; }
 .alts { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
 .alt { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--sheet); }
 .alt .pick { all: unset; display: flex; gap: 12px; align-items: flex-start; flex: 1; min-width: 0; cursor: pointer; }
@@ -117,7 +120,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, textarea:focus-visi
   flex: none; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--muted);
   display: grid; place-items: center; font: 600 13px var(--f-num); color: var(--muted);
 }
-.alt .txt { font: 16px/1.5 var(--f-text); padding-top: 3px; min-width: 0; overflow-wrap: anywhere; }
+.alt .txt { white-space: pre-line; font: 15.5px/1.5 var(--f-text); padding-top: 3px; min-width: 0; overflow-wrap: anywhere; }
 .alt.sel { border-color: var(--pen); background: var(--pen-soft); }
 .alt.sel .bubble { background: var(--pen); border-color: var(--pen); color: var(--sheet); }
 .alt.cut .txt { text-decoration: line-through; color: var(--muted); }
@@ -255,6 +258,17 @@ details summary { cursor: pointer; font-weight: 600; }
   }
 
   function todas() { return (window.QUESTOES || []).concat(extras); }
+  // dados de prova: texto-base, origem e gabarito
+  function provaDe(q) { return q.fonte ? q.fonte.replace(/ · Questão \d+$/, "") : "Adicionadas por você"; }
+  function textoDe(q) { return q.texto || (window.TEXTOS || {})[q.textoId] || ""; }
+  function textoHTML(q, aberto) {
+    var t = textoDe(q);
+    return t ? '<details class="texto"' + (aberto ? " open" : "") + '><summary>Texto da questão</summary><div class="textobase">' + esc(t) + "</div></details>" : "";
+  }
+  function comentHTML(q) {
+    if (q.comentario) return esc(q.comentario);
+    return "Gabarito oficial: " + LETRAS[q.correta] + "." + (q.fonte ? " " + esc(q.fonte) + "." : "");
+  }
   function porId(id) { return todas().find(function (q) { return q.id === id; }); }
   function registrar(q, alt) {
     var certo = alt === q.correta;
@@ -288,10 +302,11 @@ details summary { cursor: pointer; font-weight: 600; }
 
   // ---------- ABA QUESTÕES ----------
   var filtrosAbertos = false;
-  var qs = { disc: "", ass: "", status: "todas", lista: [], i: 0, sel: null, respondida: false, cortes: {} };
+  var qs = { prova: "", disc: "", ass: "", status: "todas", lista: [], i: 0, sel: null, respondida: false, cortes: {} };
 
   function filtrar() {
     return todas().filter(function (q) {
+      if (qs.prova && provaDe(q) !== qs.prova) return false;
       if (qs.disc && q.disciplina !== qs.disc) return false;
       if (qs.ass && q.assunto !== qs.ass) return false;
       var u = ultima(q.id);
@@ -335,12 +350,15 @@ details summary { cursor: pointer; font-weight: 600; }
     var all = todas();
     var discs = ordenar(uniq(all.map(function (q) { return q.disciplina; })));
     var asss = uniq(all.filter(function (q) { return !qs.disc || q.disciplina === qs.disc; }).map(function (q) { return q.assunto; })).sort();
-    var resumo = [qs.disc || "Todas as disciplinas", qs.ass, { nao: "não resolvidas", erradas: "erradas", certas: "acertadas" }[qs.status]].filter(Boolean).join(" · ");
+    var provas = uniq(all.map(provaDe)).sort();
+    var resumo = [qs.disc || "Todas as disciplinas", qs.prova, qs.ass, { nao: "não resolvidas", erradas: "erradas", certas: "acertadas" }[qs.status]].filter(Boolean).join(" · ");
     var html = '<details class="panel" id="filtros"' + (filtrosAbertos ? " open" : "") + '><summary>Filtros: ' + esc(resumo) + '</summary><div class="grid-filters">' +
       '<label class="f">Disciplina<select id="fDisc"><option value="">Todas</option>' +
       discs.map(function (d) { return '<option' + (d === qs.disc ? " selected" : "") + ">" + esc(d) + "</option>"; }).join("") + "</select></label>" +
       '<label class="f">Assunto<select id="fAss"><option value="">Todos</option>' +
       asss.map(function (a) { return '<option' + (a === qs.ass ? " selected" : "") + ">" + esc(a) + "</option>"; }).join("") + "</select></label>" +
+      '<label class="f">Prova<select id="fProva"><option value="">Todas</option>' +
+      provas.map(function (p) { return "<option" + (p === qs.prova ? " selected" : "") + ">" + esc(p) + "</option>"; }).join("") + "</select></label>" +
       '<label class="f">Situação<select id="fStatus">' +
       [["todas", "Todas"], ["nao", "Não resolvidas"], ["erradas", "Errei da última vez"], ["certas", "Acertei da última vez"]].map(function (o) {
         return '<option value="' + o[0] + '"' + (o[0] === qs.status ? " selected" : "") + ">" + o[1] + "</option>";
@@ -358,13 +376,13 @@ details summary { cursor: pointer; font-weight: 600; }
       '<span class="chip">' + esc(q.disciplina) + "</span><span>" + esc(q.assunto) + "</span>" +
       (u && !qs.respondida ? '<span class="chip ' + (u.c ? "ok" : "err") + '">' + (u.c ? "acertou antes" : "errou antes") + "</span>" : "") +
       "</div>" +
-      '<p class="enun">' + esc(q.enunciado) + "</p>" +
+      textoHTML(q, true) + '<p class="enun">' + esc(q.enunciado) + "</p>" +
       altsHTML(q, qs.sel, qs.cortes, qs.respondida, true);
     if (qs.respondida) {
       var ok = qs.sel === q.correta;
       html += '<div class="result ' + (ok ? "ok" : "err") + '"><strong>' +
         (ok ? "Você acertou." : "Você errou. Gabarito: " + LETRAS[q.correta] + ".") + "</strong>" +
-        '<p class="coment">' + esc(q.comentario || "Sem comentário.") + "</p>" +
+        '<p class="coment">' + comentHTML(q) + "</p>" +
         '<span class="note">' + historicoTxt(q.id) + "</span></div>";
     }
     html += '<div class="navq">' +
@@ -372,7 +390,7 @@ details summary { cursor: pointer; font-weight: 600; }
       (qs.respondida
         ? '<button id="bNext" class="primary grow"' + (qs.i >= qs.lista.length - 1 ? " disabled" : "") + ">Próxima questão</button>"
         : '<button id="bAnswer" class="primary grow"' + (qs.sel === null ? " disabled" : "") + ">Responder</button>") +
-      "</div><span class=\"note\">Código " + esc(q.id) + " · questão inédita no estilo VUNESP</span></article>";
+      "</div><span class=\"note\">" + esc(q.fonte || "Código " + q.id) + "</span></article>";
     app.innerHTML = html;
     bindFiltros();
     app.querySelectorAll("[data-alt]").forEach(function (b) {
@@ -391,6 +409,7 @@ details summary { cursor: pointer; font-weight: 600; }
     document.getElementById("filtros").ontoggle = function (e) { filtrosAbertos = e.target.open; };
     document.getElementById("fDisc").onchange = function (e) { qs.disc = e.target.value; qs.ass = ""; novaLista(false); viewQuestoes(); };
     document.getElementById("fAss").onchange = function (e) { qs.ass = e.target.value; novaLista(false); viewQuestoes(); };
+    document.getElementById("fProva").onchange = function (e) { qs.prova = e.target.value; novaLista(false); viewQuestoes(); };
     document.getElementById("fStatus").onchange = function (e) { qs.status = e.target.value; novaLista(false); viewQuestoes(); };
     document.getElementById("bShuffle").onclick = function () { novaLista(true); viewQuestoes(); toast("Ordem embaralhada"); };
   }
@@ -478,7 +497,7 @@ details summary { cursor: pointer; font-weight: 600; }
       '<span class="num" style="font:600 14px var(--f-num)">Questão ' + (sim.i + 1) + " de " + sim.ids.length + "</span>" +
       '<span class="timer' + (r !== null && r < 300 ? " low" : "") + '" id="tm">' + (r === null ? mmss((Date.now() - sim.inicio) / 1000) : mmss(r)) + "</span></div>" +
       '<div class="qmeta"><span class="chip">' + esc(q.disciplina) + "</span><span>" + esc(q.assunto) + "</span></div>" +
-      '<p class="enun">' + esc(q.enunciado) + "</p>" +
+      textoHTML(q, true) + '<p class="enun">' + esc(q.enunciado) + "</p>" +
       altsHTML(q, sim.resp[q.id] === undefined ? null : sim.resp[q.id], sim.cortes && sim.cortes[q.id] || {}, false, true) +
       '<div class="navq"><button id="pPrev" class="ghost"' + (sim.i === 0 ? " disabled" : "") + ">Anterior</button>" +
       '<button id="pNext" class="primary grow"' + (sim.i >= sim.ids.length - 1 ? " disabled" : "") + ">Próxima</button></div></section>" +
@@ -560,9 +579,9 @@ details summary { cursor: pointer; font-weight: 600; }
       sim.ids.map(function (id, k) {
         var q = porId(id); var a = sim.resp[id]; var ok = a === q.correta;
         return '<details><summary><span class="chip ' + (ok ? "ok" : "err") + '">' + (k + 1) + " · " + (a === undefined ? "em branco" : "marcou " + LETRAS[a]) + " · gabarito " + LETRAS[q.correta] + "</span> " + esc(q.assunto) + "</summary>" +
-          '<div style="display:grid;gap:10px;padding-top:10px"><p class="enun">' + esc(q.enunciado) + "</p>" +
+          '<div style="display:grid;gap:10px;padding-top:10px">' + textoHTML(q, false) + '<p class="enun">' + esc(q.enunciado) + "</p>" +
           altsHTML(q, a === undefined ? null : a, {}, true, false) +
-          '<p class="coment">' + esc(q.comentario || "") + "</p></div></details>";
+          '<p class="coment">' + comentHTML(q) + "</p></div></details>";
       }).join("") + "</section>";
     document.getElementById("rNovo").onclick = function () { sim = null; viewSimulado(); };
   }
@@ -666,11 +685,11 @@ details summary { cursor: pointer; font-weight: 600; }
       (s.revId ? "Revisão agendada" : "Pós-aula") + "</span><span>" + esc(q.assunto) + "</span>" +
       '<span class="note">' + s.ac + " acertos até agora</span></div>" +
       '<div class="track"><div class="fill" style="width:' + pct(s.i + (s.respondida ? 1 : 0), s.ids.length) + '%"></div></div>' +
-      '<p class="enun">' + esc(q.enunciado) + "</p>" + altsHTML(q, s.sel, s.cortes, s.respondida, true);
+      textoHTML(q, true) + '<p class="enun">' + esc(q.enunciado) + "</p>" + altsHTML(q, s.sel, s.cortes, s.respondida, true);
     if (s.respondida) {
       var ok = s.sel === q.correta;
       html += '<div class="result ' + (ok ? "ok" : "err") + '"><strong>' + (ok ? "Você acertou." : "Você errou. Gabarito: " + LETRAS[q.correta] + ".") + "</strong>" +
-        '<p class="coment">' + esc(q.comentario || "Sem comentário.") + "</p></div>";
+        '<p class="coment">' + comentHTML(q) + "</p></div>";
     }
     html += '<div class="navq"><button id="vSair" class="ghost">Sair</button>' +
       (s.respondida
@@ -716,8 +735,8 @@ details summary { cursor: pointer; font-weight: 600; }
       (erradas.length ? '<section class="panel"><h2>Revise o que errou</h2>' + erradas.map(function (id) {
         var q = porId(id); var a = s.marcadas[id];
         return '<details><summary><span class="chip err">marcou ' + LETRAS[a] + " · gabarito " + LETRAS[q.correta] + "</span> " + esc(q.assunto) + "</summary>" +
-          '<div style="display:grid;gap:10px;padding-top:10px"><p class="enun">' + esc(q.enunciado) + "</p>" +
-          altsHTML(q, a, {}, true, false) + '<p class="coment">' + esc(q.comentario || "") + "</p></div></details>";
+          '<div style="display:grid;gap:10px;padding-top:10px">' + textoHTML(q, false) + '<p class="enun">' + esc(q.enunciado) + "</p>" +
+          altsHTML(q, a, {}, true, false) + '<p class="coment">' + comentHTML(q) + "</p></div></details>";
       }).join("") + "</section>" : "");
     document.getElementById("vVolta").onclick = function () { rv.sessao = null; viewPosAula(); };
   }
@@ -832,9 +851,12 @@ details summary { cursor: pointer; font-weight: 600; }
       '<p class="hint">Cada pessoa tem suas próprias respostas, revisões e simulados.</p><div class="perfis">' +
       PERFIS.map(function (n) {
         var s = load(n);
-        var vistas = Object.keys(s.resp).length;
+        var vistas = Object.keys(s.resp).filter(function (id) { return porId(id); }).length;
         var h = hoje0();
-        var hoje = s.revs.filter(function (r) { var p = proxData(r); return p !== null && p <= h; }).length;
+        var hoje = s.revs.filter(function (r) {
+          var p = proxData(r);
+          return p !== null && p <= h && todas().some(function (q) { return q.disciplina === r.disc && r.asss.indexOf(q.assunto) >= 0; });
+        }).length;
         return '<button class="perfil" data-perfil="' + esc(n) + '"><span class="ini">' + esc(n.charAt(0)) + "</span><span><b>" + esc(n) + '</b><span class="note">' +
           vistas + (vistas === 1 ? " questão vista" : " questões vistas") + (hoje ? " · " + hoje + (hoje === 1 ? " revisão" : " revisões") + " para hoje" : "") + "</span></span></button>";
       }).join("") + "</div>" +
@@ -847,7 +869,10 @@ details summary { cursor: pointer; font-weight: 600; }
   function entrar(nome) {
     perfil = nome; store = load(nome);
     clearInterval(tick); sim = null; rv.sessao = null; rv.disc = ""; rv.asss = []; simCfg.discs = null;
-    qs.disc = ""; qs.ass = ""; qs.status = "todas";
+    qs.prova = ""; qs.disc = ""; qs.ass = ""; qs.status = "todas";
+    // revisões de assuntos que não existem mais no banco
+    store.revs = store.revs.filter(function (r) { return todas().some(function (q) { return q.disciplina === r.disc && r.asss.indexOf(q.assunto) >= 0; }); });
+    save();
     document.body.classList.remove("sem-perfil");
     contar(); novaLista(false);
     if (location.hash !== "#questoes" && location.hash !== "") location.hash = "#questoes"; else render();
