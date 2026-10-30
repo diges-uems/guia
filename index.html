@@ -220,7 +220,6 @@ details summary { cursor: pointer; font-weight: 600; }
 
   // ---------- armazenamento (um registro por pessoa) ----------
   var PERFIS = ["Giovanna", "Bruno"];
-  var DATA_PROVA = new Date(2027, 0, 31);
   var EDITAL = window.EDITAL || { cargo: "", blocos: [] };
   var perfil = null;
   function lerJSON(k) { try { var r = localStorage.getItem(k); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
@@ -254,7 +253,6 @@ details summary { cursor: pointer; font-weight: 600; }
       return ia - ib || a.localeCompare(b);
     });
   }
-  function diasParaProva() { var h = new Date(); h.setHours(0, 0, 0, 0); return Math.round((DATA_PROVA - h) / 86400000); }
 
   function todas() { return (window.QUESTOES || []).concat(extras); }
   function porId(id) { return todas().find(function (q) { return q.id === id; }); }
@@ -757,7 +755,7 @@ details summary { cursor: pointer; font-weight: 600; }
       '<div class="kpi"><b>' + resolvidas + "/" + all.length + "</b><span>questões já vistas</span></div>" +
       '<div class="kpi"><b>' + pct(acTot, tent) + "%</b><span>acerto em " + tent + " respostas</span></div>" +
       '<div class="kpi"><b>' + pend + "</b><span>para revisar (errou da última vez)</span></div>" +
-      '<div class="kpi"><b>' + Math.max(0, diasParaProva()) + "</b><span>dias até a prova (31/01/2027)</span></div></div>" +
+      '<div class="kpi"><b>' + store.sims.length + "</b><span>simulados feitos</span></div></div>" +
       (pend ? '<div class="row"><button id="dRev" class="primary">Revisar ' + pend + " erros</button></div>" : "") +
       "</section>" +
       EDITAL.blocos.map(function (b) {
@@ -830,7 +828,6 @@ details summary { cursor: pointer; font-weight: 600; }
   function telaPerfil() {
     document.body.classList.add("sem-perfil");
     contar();
-    var dias = diasParaProva();
     app.innerHTML = '<section class="panel"><h2>Quem vai estudar agora?</h2>' +
       '<p class="hint">Cada pessoa tem suas próprias respostas, revisões e simulados.</p><div class="perfis">' +
       PERFIS.map(function (n) {
@@ -841,7 +838,7 @@ details summary { cursor: pointer; font-weight: 600; }
         return '<button class="perfil" data-perfil="' + esc(n) + '"><span class="ini">' + esc(n.charAt(0)) + "</span><span><b>" + esc(n) + '</b><span class="note">' +
           vistas + (vistas === 1 ? " questão vista" : " questões vistas") + (hoje ? " · " + hoje + (hoje === 1 ? " revisão" : " revisões") + " para hoje" : "") + "</span></span></button>";
       }).join("") + "</div>" +
-      '<p class="note">' + esc(EDITAL.cargo) + " · TRF3 · VUNESP" + (dias >= 0 ? " · faltam " + dias + " dias para a prova (31/01/2027)" : "") + "</p></section>";
+      '<p class="note">' + esc(EDITAL.cargo) + " · TRF3 · VUNESP</p></section>";
     app.querySelectorAll("[data-perfil]").forEach(function (b) {
       b.onclick = function () { entrar(b.dataset.perfil); };
     });
