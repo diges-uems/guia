@@ -109,6 +109,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, textarea:focus-visi
 .chip.ok { background: var(--ok-soft); color: var(--ok); }
 .chip.err { background: var(--err-soft); color: var(--err); }
 .enun { font: 17px/1.6 var(--f-text); margin: 0; text-wrap: pretty; white-space: pre-line; overflow-wrap: anywhere; }
+.origem { display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 13px; line-height: 1.5; color: var(--muted); padding: 8px 10px; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); }
+.origem b { color: var(--ink); font-weight: 600; }
 details.texto { border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
 details.texto summary { padding: 10px 12px; font-size: 14px; color: var(--muted); }
 .textobase { padding: 0 14px 14px; font: 15px/1.65 var(--f-text); white-space: pre-line; max-height: 55vh; overflow-y: auto; overflow-wrap: anywhere; }
@@ -260,6 +262,18 @@ details summary { cursor: pointer; font-weight: 600; }
   function todas() { return (window.QUESTOES || []).concat(extras); }
   // dados de prova: texto-base, origem e gabarito
   function provaDe(q) { return q.fonte ? q.fonte.replace(/ · Questão \d+$/, "") : "Adicionadas por você"; }
+  // cabeçalho de origem no formato do QConcursos: Ano, Banca, Órgão, Prova
+  var ORGAOS = { "TJSP": "TJ-SP", "MPSP": "MPE-SP", "Prefeitura de Campinas": "Prefeitura de Campinas - SP", "ARES-PCJ": "ARES-PCJ", "SPCine": "SPCine" };
+  function origemHTML(q) {
+    if (!q.fonte) return "";
+    var p = q.fonte.split(" · ");
+    var m = /^(\S+)\s+(\d{4})$/.exec(p[0] || "");
+    if (!m) return '<div class="origem">' + esc(q.fonte) + "</div>";
+    var banca = m[1], ano = m[2], orgao = ORGAOS[p[1]] || p[1] || "", cargo = p[2] || "", num = (p[3] || "").replace("Questão ", "");
+    function item(r, v) { return v ? "<span><b>" + r + ":</b> " + esc(v) + "</span>" : ""; }
+    return '<div class="origem">' + item("Ano", ano) + item("Banca", banca) + item("Órgão", orgao) +
+      item("Prova", [banca, ano, orgao, cargo].filter(Boolean).join(" - ")) + item("Questão", num) + "</div>";
+  }
   function textoDe(q) { return q.texto || (window.TEXTOS || {})[q.textoId] || ""; }
   function textoHTML(q, aberto) {
     var t = textoDe(q);
@@ -376,7 +390,7 @@ details summary { cursor: pointer; font-weight: 600; }
       '<span class="chip">' + esc(q.disciplina) + "</span><span>" + esc(q.assunto) + "</span>" +
       (u && !qs.respondida ? '<span class="chip ' + (u.c ? "ok" : "err") + '">' + (u.c ? "acertou antes" : "errou antes") + "</span>" : "") +
       "</div>" +
-      textoHTML(q, true) + '<p class="enun">' + esc(q.enunciado) + "</p>" +
+      origemHTML(q) + textoHTML(q, true) + '<p class="enun">' + esc(q.enunciado) + "</p>" +
       altsHTML(q, qs.sel, qs.cortes, qs.respondida, true);
     if (qs.respondida) {
       var ok = qs.sel === q.correta;
@@ -497,7 +511,7 @@ details summary { cursor: pointer; font-weight: 600; }
       '<span class="num" style="font:600 14px var(--f-num)">Questão ' + (sim.i + 1) + " de " + sim.ids.length + "</span>" +
       '<span class="timer' + (r !== null && r < 300 ? " low" : "") + '" id="tm">' + (r === null ? mmss((Date.now() - sim.inicio) / 1000) : mmss(r)) + "</span></div>" +
       '<div class="qmeta"><span class="chip">' + esc(q.disciplina) + "</span><span>" + esc(q.assunto) + "</span></div>" +
-      textoHTML(q, true) + '<p class="enun">' + esc(q.enunciado) + "</p>" +
+      origemHTML(q) + textoHTML(q, true) + '<p class="enun">' + esc(q.enunciado) + "</p>" +
       altsHTML(q, sim.resp[q.id] === undefined ? null : sim.resp[q.id], sim.cortes && sim.cortes[q.id] || {}, false, true) +
       '<div class="navq"><button id="pPrev" class="ghost"' + (sim.i === 0 ? " disabled" : "") + ">Anterior</button>" +
       '<button id="pNext" class="primary grow"' + (sim.i >= sim.ids.length - 1 ? " disabled" : "") + ">Próxima</button></div></section>" +
@@ -579,7 +593,7 @@ details summary { cursor: pointer; font-weight: 600; }
       sim.ids.map(function (id, k) {
         var q = porId(id); var a = sim.resp[id]; var ok = a === q.correta;
         return '<details><summary><span class="chip ' + (ok ? "ok" : "err") + '">' + (k + 1) + " · " + (a === undefined ? "em branco" : "marcou " + LETRAS[a]) + " · gabarito " + LETRAS[q.correta] + "</span> " + esc(q.assunto) + "</summary>" +
-          '<div style="display:grid;gap:10px;padding-top:10px">' + textoHTML(q, false) + '<p class="enun">' + esc(q.enunciado) + "</p>" +
+          '<div style="display:grid;gap:10px;padding-top:10px">' + origemHTML(q) + textoHTML(q, false) + '<p class="enun">' + esc(q.enunciado) + "</p>" +
           altsHTML(q, a === undefined ? null : a, {}, true, false) +
           '<p class="coment">' + comentHTML(q) + "</p></div></details>";
       }).join("") + "</section>";
@@ -685,7 +699,7 @@ details summary { cursor: pointer; font-weight: 600; }
       (s.revId ? "Revisão agendada" : "Pós-aula") + "</span><span>" + esc(q.assunto) + "</span>" +
       '<span class="note">' + s.ac + " acertos até agora</span></div>" +
       '<div class="track"><div class="fill" style="width:' + pct(s.i + (s.respondida ? 1 : 0), s.ids.length) + '%"></div></div>' +
-      textoHTML(q, true) + '<p class="enun">' + esc(q.enunciado) + "</p>" + altsHTML(q, s.sel, s.cortes, s.respondida, true);
+      origemHTML(q) + textoHTML(q, true) + '<p class="enun">' + esc(q.enunciado) + "</p>" + altsHTML(q, s.sel, s.cortes, s.respondida, true);
     if (s.respondida) {
       var ok = s.sel === q.correta;
       html += '<div class="result ' + (ok ? "ok" : "err") + '"><strong>' + (ok ? "Você acertou." : "Você errou. Gabarito: " + LETRAS[q.correta] + ".") + "</strong>" +
@@ -735,7 +749,7 @@ details summary { cursor: pointer; font-weight: 600; }
       (erradas.length ? '<section class="panel"><h2>Revise o que errou</h2>' + erradas.map(function (id) {
         var q = porId(id); var a = s.marcadas[id];
         return '<details><summary><span class="chip err">marcou ' + LETRAS[a] + " · gabarito " + LETRAS[q.correta] + "</span> " + esc(q.assunto) + "</summary>" +
-          '<div style="display:grid;gap:10px;padding-top:10px">' + textoHTML(q, false) + '<p class="enun">' + esc(q.enunciado) + "</p>" +
+          '<div style="display:grid;gap:10px;padding-top:10px">' + origemHTML(q) + textoHTML(q, false) + '<p class="enun">' + esc(q.enunciado) + "</p>" +
           altsHTML(q, a, {}, true, false) + '<p class="coment">' + comentHTML(q) + "</p></div></details>";
       }).join("") + "</section>" : "");
     document.getElementById("vVolta").onclick = function () { rv.sessao = null; viewPosAula(); };
