@@ -66,6 +66,15 @@ header.top {
 .brand h1 { margin: 0; font: 700 18px/1.2 var(--f-ui); letter-spacing: -0.01em; }
 .brand h1 span { color: var(--pen); }
 .brand small { color: var(--muted); font: 500 12px var(--f-num); }
+.who { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.trocar { padding: 2px 8px; font-size: 12px; border-radius: 999px; }
+body.sem-perfil nav.tabs { display: none; }
+.perfis { display: grid; gap: 10px; }
+.perfil { display: flex; align-items: center; gap: 14px; text-align: left; padding: 14px; border-radius: 12px; }
+.perfil:hover { border-color: var(--pen); }
+.perfil b { display: block; font-size: 17px; }
+.perfil .note { font-weight: 400; }
+.perfil .ini { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--pen-soft); color: var(--pen); font: 600 18px var(--f-num); }
 nav.tabs { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; }
 nav.tabs a {
   flex: 1 0 auto; text-align: center; padding: 10px 6px; color: var(--muted); white-space: nowrap;
@@ -188,7 +197,7 @@ details summary { cursor: pointer; font-weight: 600; }
   <div class="wrap">
     <div class="brand">
       <h1>Caderno <span>TRF3</span></h1>
-      <small id="brandCount"></small>
+      <div class="who"><small id="brandCount"></small><button id="bTrocar" class="trocar" hidden>Trocar</button></div>
     </div>
     <nav class="tabs" aria-label="Seções">
       <a href="#questoes" data-tab="questoes">Questões</a>
@@ -209,22 +218,45 @@ details summary { cursor: pointer; font-weight: 600; }
   var LETRAS = ["A", "B", "C", "D", "E"];
   var KEY = "caderno-trf3:v1";
 
-  // ---------- armazenamento ----------
-  function load() {
-    var base = { resp: {}, sims: [], extra: [], revs: [] };
-    try {
-      var raw = localStorage.getItem(KEY);
-      if (raw) {
-        var s = JSON.parse(raw);
-        base.resp = s.resp || {}; base.sims = s.sims || []; base.extra = s.extra || []; base.revs = s.revs || [];
-      }
-    } catch (e) {}
-    return base;
+  // ---------- armazenamento (um registro por pessoa) ----------
+  var PERFIS = ["Giovanna", "Bruno"];
+  var DATA_PROVA = new Date(2027, 0, 31);
+  var EDITAL = window.EDITAL || { cargo: "", blocos: [] };
+  var perfil = null;
+  function lerJSON(k) { try { var r = localStorage.getItem(k); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
+  function gravar(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function chavePerfil(n) { return KEY + ":perfil:" + n; }
+  function load(nome) {
+    var s = lerJSON(chavePerfil(nome)) || {};
+    return { resp: s.resp || {}, sims: s.sims || [], revs: s.revs || [] };
   }
-  var store = load();
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+  // dados da versão sem perfis passam a ser do Bruno
+  (function migrar() {
+    var velho = lerJSON(KEY);
+    if (!velho || velho.migrado) return;
+    if (!lerJSON(chavePerfil("Bruno"))) gravar(chavePerfil("Bruno"), { resp: velho.resp || {}, sims: velho.sims || [], revs: velho.revs || [] });
+    if (velho.extra && velho.extra.length && !lerJSON(KEY + ":extra")) gravar(KEY + ":extra", velho.extra);
+    gravar(KEY, { migrado: true });
+  })();
+  var extras = lerJSON(KEY + ":extra") || [];
+  var store = { resp: {}, sims: [], revs: [] };
+  function save() { if (perfil) gravar(chavePerfil(perfil), store); }
+  function saveExtras() { gravar(KEY + ":extra", extras); }
 
-  function todas() { return (window.QUESTOES || []).concat(store.extra); }
+  // disciplinas na ordem do edital
+  var ORDEM = EDITAL.blocos.reduce(function (a, b) { return a.concat(b.disciplinas); }, []);
+  function blocoDe(d) { return EDITAL.blocos.find(function (b) { return b.disciplinas.indexOf(d) >= 0; }) || null; }
+  function pesoDe(d) { var b = blocoDe(d); return b ? b.peso : 1; }
+  function ordenar(lista) {
+    return lista.slice().sort(function (a, b) {
+      var ia = ORDEM.indexOf(a), ib = ORDEM.indexOf(b);
+      if (ia < 0) ia = 999; if (ib < 0) ib = 999;
+      return ia - ib || a.localeCompare(b);
+    });
+  }
+  function diasParaProva() { var h = new Date(); h.setHours(0, 0, 0, 0); return Math.round((DATA_PROVA - h) / 86400000); }
+
+  function todas() { return (window.QUESTOES || []).concat(extras); }
   function porId(id) { return todas().find(function (q) { return q.id === id; }); }
   function registrar(q, alt) {
     var certo = alt === q.correta;
@@ -303,7 +335,7 @@ details summary { cursor: pointer; font-weight: 600; }
 
   function viewQuestoes() {
     var all = todas();
-    var discs = uniq(all.map(function (q) { return q.disciplina; })).sort();
+    var discs = ordenar(uniq(all.map(function (q) { return q.disciplina; })));
     var asss = uniq(all.filter(function (q) { return !qs.disc || q.disciplina === qs.disc; }).map(function (q) { return q.assunto; })).sort();
     var resumo = [qs.disc || "Todas as disciplinas", qs.ass, { nao: "não resolvidas", erradas: "erradas", certas: "acertadas" }[qs.status]].filter(Boolean).join(" · ");
     var html = '<details class="panel" id="filtros"' + (filtrosAbertos ? " open" : "") + '><summary>Filtros: ' + esc(resumo) + '</summary><div class="grid-filters">' +
@@ -367,20 +399,24 @@ details summary { cursor: pointer; font-weight: 600; }
 
   // ---------- ABA SIMULADO ----------
   var sim = null; // { ids, resp, i, inicio, limite, fim, confirmar }
-  var simCfg = { qtd: 10, discs: null, tempo: true };
+  var simCfg = { qtd: 20, discs: null, tempo: true, modo: "prova" };
   var tick;
 
   function viewSimulado() {
     clearInterval(tick);
     if (sim && !sim.fim) return simRodando();
     if (sim && sim.fim) return simResultado();
-    var discs = uniq(todas().map(function (q) { return q.disciplina; })).sort();
+    var discs = ordenar(uniq(todas().map(function (q) { return q.disciplina; })));
     if (!simCfg.discs) simCfg.discs = discs.slice();
     var disponiveis = todas().filter(function (q) { return simCfg.discs.indexOf(q.disciplina) >= 0; }).length;
     app.innerHTML = '<section class="panel"><h2>Montar simulado</h2>' +
-      '<p class="hint">Responda sem ver o gabarito. A correção sai no fim, como na prova. As questões são divididas igualmente entre as disciplinas marcadas e aparecem agrupadas por matéria. Tempo sugerido: 3 minutos por questão.</p>' +
+      '<p class="hint">Responda sem ver o gabarito. A correção sai no fim, como na prova.</p>' +
+      '<label class="f">Formato<select id="sModo">' +
+      '<option value="prova"' + (simCfg.modo === "prova" ? " selected" : "") + '>Modelo da prova AJAJ (40% gerais, 60% específicas)</option>' +
+      '<option value="igual"' + (simCfg.modo === "igual" ? " selected" : "") + '>Mesmo número por disciplina</option></select></label>' +
+      '<p class="note">Prova real: 24 questões de Conhecimentos Gerais (peso 1) e 36 de Específicos (peso 2). Você vê a nota ponderada no resultado.</p>' +
       '<label class="f">Número de questões<select id="sQtd">' +
-      [5, 10, 20, 30, 40].map(function (n) { return "<option" + (n === simCfg.qtd ? " selected" : "") + ">" + n + "</option>"; }).join("") +
+      [5, 10, 20, 30, 40, 60].map(function (n) { return "<option" + (n === simCfg.qtd ? " selected" : "") + ">" + n + "</option>"; }).join("") +
       "</select></label>" +
       '<div><span class="f" style="display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Disciplinas</span><div class="checks">' +
       discs.map(function (d, k) {
@@ -391,6 +427,7 @@ details summary { cursor: pointer; font-weight: 600; }
       '<span class="note">' + disponiveis + " questões disponíveis</span></div></section>" +
       historicoSims();
     document.getElementById("sQtd").onchange = function (e) { simCfg.qtd = +e.target.value; };
+    document.getElementById("sModo").onchange = function (e) { simCfg.modo = e.target.value; };
     document.getElementById("sTempo").onchange = function (e) { simCfg.tempo = e.target.checked; };
     app.querySelectorAll('.checks input[id^="sd"]').forEach(function (c) {
       c.onchange = function () {
@@ -399,13 +436,27 @@ details summary { cursor: pointer; font-weight: 600; }
       };
     });
     document.getElementById("sGo").onclick = function () {
-      // distribui as questões igualmente entre as disciplinas, como numa prova
-      var grupos = simCfg.discs.map(function (d) { return shuffle(todas().filter(function (q) { return q.disciplina === d; })); });
-      var ids = [];
-      while (ids.length < simCfg.qtd && grupos.some(function (g) { return g.length; })) {
-        grupos.forEach(function (g) { if (g.length && ids.length < simCfg.qtd) ids.push(g.shift().id); });
+      // sorteia em rodízio entre as disciplinas para não concentrar numa só
+      function sortear(discs, n, ja) {
+        var grupos = discs.map(function (d) { return shuffle(todas().filter(function (q) { return q.disciplina === d && ja.indexOf(q.id) < 0; })); });
+        var out = [];
+        while (out.length < n && grupos.some(function (g) { return g.length; })) {
+          grupos.forEach(function (g) { if (g.length && out.length < n) out.push(g.shift().id); });
+        }
+        return out;
       }
-      ids = ids.sort(function (a, b) { return simCfg.discs.indexOf(porId(a).disciplina) - simCfg.discs.indexOf(porId(b).disciplina); });
+      var ids = [];
+      if (simCfg.modo === "prova") {
+        var gerais = simCfg.discs.filter(function (d) { var b = blocoDe(d); return !b || b.peso === 1; });
+        var espec = simCfg.discs.filter(function (d) { var b = blocoDe(d); return b && b.peso !== 1; });
+        var nG = Math.round(simCfg.qtd * 24 / 60);
+        ids = sortear(gerais, nG, []);
+        ids = ids.concat(sortear(espec, simCfg.qtd - ids.length, ids));
+        if (ids.length < simCfg.qtd) ids = ids.concat(sortear(simCfg.discs, simCfg.qtd - ids.length, ids));
+      } else {
+        ids = sortear(simCfg.discs, simCfg.qtd, []);
+      }
+      ids = ids.sort(function (a, b) { return ORDEM.indexOf(porId(a).disciplina) - ORDEM.indexOf(porId(b).disciplina); });
       sim = { ids: ids, resp: {}, i: 0, inicio: Date.now(), limite: simCfg.tempo ? ids.length * 180 : 0, fim: 0, confirmar: false };
       viewSimulado();
     };
@@ -413,9 +464,9 @@ details summary { cursor: pointer; font-weight: 600; }
 
   function historicoSims() {
     if (!store.sims.length) return "";
-    return '<section class="panel"><h2>Simulados anteriores</h2><div class="scroll"><table><thead><tr><th>Data</th><th>Acertos</th><th>%</th><th>Tempo</th></tr></thead><tbody>' +
+    return '<section class="panel"><h2>Simulados anteriores</h2><div class="scroll"><table><thead><tr><th>Data</th><th>Acertos</th><th>%</th><th>Nota</th><th>Tempo</th></tr></thead><tbody>' +
       store.sims.slice(-10).reverse().map(function (s) {
-        return "<tr><td>" + new Date(s.t).toLocaleDateString("pt-BR") + '</td><td class="n">' + s.ac + "/" + s.n + '</td><td class="n">' + pct(s.ac, s.n) + '%</td><td class="n">' + mmss(s.seg) + "</td></tr>";
+        return "<tr><td>" + new Date(s.t).toLocaleDateString("pt-BR") + '</td><td class="n">' + s.ac + "/" + s.n + '</td><td class="n">' + pct(s.ac, s.n) + '%</td><td class="n">' + (s.max ? s.pts + "/" + s.max : "-") + '</td><td class="n">' + mmss(s.seg) + "</td></tr>";
       }).join("") + "</tbody></table></div></section>";
   }
 
@@ -477,12 +528,18 @@ details summary { cursor: pointer; font-weight: 600; }
       var a = sim.resp[id]; if (a === undefined) return;
       if (registrar(porId(id), a)) ac++;
     });
-    store.sims.push({ t: sim.fim, n: sim.ids.length, ac: ac, seg: Math.round((sim.fim - sim.inicio) / 1000) });
+    var np = notaPonderada(sim.ids, sim.resp);
+    store.sims.push({ t: sim.fim, n: sim.ids.length, ac: ac, pts: np.pts, max: np.max, seg: Math.round((sim.fim - sim.inicio) / 1000) });
     save();
     sim.confirmar = false;
     viewSimulado(); window.scrollTo(0, 0);
   }
 
+  function notaPonderada(ids, resp) {
+    var pts = 0, max = 0;
+    ids.forEach(function (id) { var q = porId(id); if (!q) return; var w = pesoDe(q.disciplina); max += w; if (resp[id] === q.correta) pts += w; });
+    return { pts: pts, max: max };
+  }
   function simResultado() {
     var porDisc = {}; var ac = 0;
     sim.ids.forEach(function (id) {
@@ -490,12 +547,14 @@ details summary { cursor: pointer; font-weight: 600; }
       d.n++; if (sim.resp[id] === q.correta) { d.ac++; ac++; }
     });
     var n = sim.ids.length;
+    var np = notaPonderada(sim.ids, sim.resp);
     app.innerHTML = '<section class="panel"><h2>Resultado do simulado</h2><div class="kpis">' +
       '<div class="kpi"><b>' + ac + "/" + n + "</b><span>acertos</span></div>" +
       '<div class="kpi"><b>' + pct(ac, n) + "%</b><span>aproveitamento</span></div>" +
+      '<div class="kpi"><b>' + np.pts + "/" + np.max + "</b><span>nota ponderada (gerais ×1, específicas ×2)</span></div>" +
       '<div class="kpi"><b>' + mmss((sim.fim - sim.inicio) / 1000) + "</b><span>tempo usado</span></div></div>" +
       '<div class="scroll"><table><thead><tr><th>Disciplina</th><th>Acertos</th><th>%</th></tr></thead><tbody>' +
-      Object.keys(porDisc).sort().map(function (d) {
+      ordenar(Object.keys(porDisc)).map(function (d) {
         return "<tr><td>" + esc(d) + '</td><td class="n">' + porDisc[d].ac + "/" + porDisc[d].n + '</td><td class="n">' + pct(porDisc[d].ac, porDisc[d].n) + "%</td></tr>";
       }).join("") + "</tbody></table></div>" +
       '<div class="row"><button id="rNovo" class="primary">Novo simulado</button></div></section>' +
@@ -540,7 +599,7 @@ details summary { cursor: pointer; font-weight: 600; }
     if (s && !s.fim) return rvRodando();
     if (s && s.fim) return rvResumo();
     var all = todas();
-    var discs = uniq(all.map(function (q) { return q.disciplina; })).sort();
+    var discs = ordenar(uniq(all.map(function (q) { return q.disciplina; })));
     if (!rv.disc) rv.disc = discs[0] || "";
     var asssDisc = uniq(all.filter(function (q) { return q.disciplina === rv.disc; }).map(function (q) { return q.assunto; })).sort();
     rv.asss = rv.asss.filter(function (a) { return asssDisc.indexOf(a) >= 0; });
@@ -682,20 +741,30 @@ details summary { cursor: pointer; font-weight: 600; }
       if (r.length) { resolvidas++; d.feitas++; if (!r[r.length - 1].c) pend++; }
       r.forEach(function (x) { tent++; d.n++; if (x.c) { acTot++; d.ac++; } });
     });
-    var nomes = Object.keys(disc).sort(function (a, b) { return pct(disc[a].ac, disc[a].n) - pct(disc[b].ac, disc[b].n); });
-    app.innerHTML = '<section class="panel"><h2>Seu desempenho</h2><div class="kpis">' +
-      '<div class="kpi"><b>' + resolvidas + "/" + all.length + "</b><span>questões já vistas</span></div>" +
-      '<div class="kpi"><b>' + pct(acTot, tent) + "%</b><span>acerto em " + tent + " respostas</span></div>" +
-      '<div class="kpi"><b>' + pend + "</b><span>para revisar (errou da última vez)</span></div>" +
-      '<div class="kpi"><b>' + store.sims.length + "</b><span>simulados feitos</span></div></div>" +
-      (pend ? '<div class="row"><button id="dRev" class="primary">Revisar ' + pend + " erros</button></div>" : "") +
-      "</section>" +
-      '<section class="panel"><h2>Por disciplina</h2><p class="hint">Ordenado da pior para a melhor. Comece a estudar pelo topo.</p><div class="bars">' +
-      nomes.map(function (n) {
+    function barras(nomes) {
+      nomes = nomes.filter(function (n) { return disc[n]; }).sort(function (a, b) {
+        var da = disc[a], db = disc[b];
+        return (da.n ? pct(da.ac, da.n) : 101) - (db.n ? pct(db.ac, db.n) : 101);
+      });
+      return '<div class="bars">' + nomes.map(function (n) {
         var d = disc[n]; var p = pct(d.ac, d.n);
         return '<div class="bar"><div class="lbl"><span>' + esc(n) + "</span><span>" + (d.n ? p + "% · " + d.ac + "/" + d.n : "sem respostas") + " · vistas " + d.feitas + "/" + d.total + "</span></div>" +
           '<div class="track"><div class="fill ' + (d.n ? (p >= 70 ? "good" : p < 50 ? "bad" : "") : "") + '" style="width:' + (d.n ? p : 0) + '%"></div></div></div>';
-      }).join("") + "</div></section>" + historicoSims();
+      }).join("") + "</div>";
+    }
+    var fora = Object.keys(disc).filter(function (n) { return ORDEM.indexOf(n) < 0; });
+    app.innerHTML = '<section class="panel"><h2>Desempenho de ' + esc(perfil) + '</h2><div class="kpis">' +
+      '<div class="kpi"><b>' + resolvidas + "/" + all.length + "</b><span>questões já vistas</span></div>" +
+      '<div class="kpi"><b>' + pct(acTot, tent) + "%</b><span>acerto em " + tent + " respostas</span></div>" +
+      '<div class="kpi"><b>' + pend + "</b><span>para revisar (errou da última vez)</span></div>" +
+      '<div class="kpi"><b>' + Math.max(0, diasParaProva()) + "</b><span>dias até a prova (31/01/2027)</span></div></div>" +
+      (pend ? '<div class="row"><button id="dRev" class="primary">Revisar ' + pend + " erros</button></div>" : "") +
+      "</section>" +
+      EDITAL.blocos.map(function (b) {
+        return '<section class="panel"><h2>' + esc(b.nome) + '</h2><p class="hint">' + b.questoes + " questões na prova, peso " + b.peso + ". Da pior para a melhor matéria: comece pelo topo.</p>" + barras(b.disciplinas) + "</section>";
+      }).join("") +
+      (fora.length ? '<section class="panel"><h2>Outras</h2>' + barras(fora) + "</section>" : "") +
+      historicoSims();
     var b = document.getElementById("dRev");
     if (b) b.onclick = function () { qs.disc = ""; qs.ass = ""; qs.status = "erradas"; novaLista(false); location.hash = "#questoes"; };
   }
@@ -704,20 +773,20 @@ details summary { cursor: pointer; font-weight: 600; }
   var resetPend = false;
   function viewAjustes() {
     app.innerHTML =
-      '<section class="panel"><h2>Backup do progresso</h2><p class="hint">Seu progresso fica salvo só neste navegador. Copie o backup para guardar ou levar para outro aparelho.</p>' +
+      '<section class="panel"><h2>Backup do progresso de ' + esc(perfil) + '</h2><p class="hint">O progresso fica salvo só neste navegador. Copie o backup para guardar ou levar para outro aparelho.</p>' +
       '<div class="row"><button id="aCopy" class="primary">Copiar backup</button></div>' +
       '<label class="f">Colar backup para restaurar<textarea id="aBackup" placeholder="Cole aqui o texto do backup"></textarea></label>' +
       '<div class="row"><button id="aRestore">Restaurar backup</button></div></section>' +
       '<section class="panel"><h2>Adicionar questões</h2><p class="hint">Cole uma lista em JSON no mesmo formato do arquivo questoes.js. Questões com código repetido são ignoradas.</p>' +
       '<label class="f">Questões em JSON<textarea id="aImport" placeholder=\'[{"id":"meu-001","disciplina":"Direito Penal","assunto":"Peculato","enunciado":"…","alternativas":["…","…","…","…","…"],"correta":0,"comentario":"…"}]\'></textarea></label>' +
-      '<div class="row"><button id="aImp">Adicionar questões</button><span class="note">' + store.extra.length + " questões adicionadas por você</span></div></section>" +
-      '<section class="panel"><h2>Zerar progresso</h2><p class="hint">Apaga respostas, simulados e revisões agendadas. As questões adicionadas por você continuam.</p>' +
+      '<div class="row"><button id="aImp">Adicionar questões</button><span class="note">' + extras.length + " questões adicionadas (valem para as duas pessoas)</span></div></section>" +
+      '<section class="panel"><h2>Zerar progresso de ' + esc(perfil) + '</h2><p class="hint">Apaga respostas, simulados e revisões agendadas só desta pessoa. As questões adicionadas por você continuam.</p>' +
       (resetPend
         ? '<div class="row"><button id="aResetSim" class="danger">Sim, apagar tudo</button><button id="aResetNao" class="ghost">Cancelar</button></div>'
         : '<div class="row"><button id="aReset" class="danger">Zerar progresso</button></div>') +
       "</section>";
     document.getElementById("aCopy").onclick = function () {
-      var txt = JSON.stringify(store);
+      var txt = JSON.stringify({ perfil: perfil, resp: store.resp, sims: store.sims, revs: store.revs, extra: extras });
       var ta = document.getElementById("aBackup");
       function fallback() { ta.value = txt; ta.focus(); ta.select(); toast("Selecionei o backup. Copie com o menu do teclado."); }
       try { navigator.clipboard.writeText(txt).then(function () { toast("Backup copiado"); }, fallback); } catch (e) { fallback(); }
@@ -726,7 +795,10 @@ details summary { cursor: pointer; font-weight: 600; }
       try {
         var s = JSON.parse(document.getElementById("aBackup").value);
         if (!s || typeof s.resp !== "object") throw new Error();
-        store = { resp: s.resp || {}, sims: s.sims || [], extra: s.extra || [], revs: s.revs || [] }; save(); toast("Backup restaurado"); render();
+        store = { resp: s.resp || {}, sims: s.sims || [], revs: s.revs || [] }; save();
+        var ids = todas().map(function (q) { return q.id; });
+        (s.extra || []).forEach(function (q) { if (q && q.id && ids.indexOf(q.id) < 0) extras.push(q); });
+        saveExtras(); toast("Backup restaurado em " + perfil); contar(); render();
       } catch (e) { toast("Texto inválido. Cole o backup completo, começando com {"); }
     };
     document.getElementById("aImp").onclick = function () {
@@ -738,11 +810,11 @@ details summary { cursor: pointer; font-weight: 600; }
         var valida = q && q.id && q.enunciado && Array.isArray(q.alternativas) && q.alternativas.length >= 2 &&
           typeof q.correta === "number" && q.correta >= 0 && q.correta < q.alternativas.length;
         if (valida && ids.indexOf(q.id) < 0) {
-          store.extra.push({ id: String(q.id), disciplina: q.disciplina || "Outras", assunto: q.assunto || "Geral", enunciado: q.enunciado, alternativas: q.alternativas.slice(0, 5), correta: q.correta, comentario: q.comentario || "" });
+          extras.push({ id: String(q.id), disciplina: q.disciplina || "Outras", assunto: q.assunto || "Geral", enunciado: q.enunciado, alternativas: q.alternativas.slice(0, 5), correta: q.correta, comentario: q.comentario || "" });
           ids.push(q.id); add++;
         }
       });
-      save(); toast(add + " questões adicionadas"); novaLista(false); viewAjustes(); contar();
+      saveExtras(); toast(add + " questões adicionadas"); novaLista(false); viewAjustes(); contar();
     };
     var r = document.getElementById("aReset"); if (r) r.onclick = function () { resetPend = true; viewAjustes(); };
     var rs = document.getElementById("aResetSim"); if (rs) rs.onclick = function () { store.resp = {}; store.sims = []; store.revs = []; save(); resetPend = false; toast("Progresso zerado"); viewAjustes(); };
@@ -750,9 +822,43 @@ details summary { cursor: pointer; font-weight: 600; }
   }
 
   // ---------- roteamento ----------
-  function contar() { document.getElementById("brandCount").textContent = todas().length + " questões"; }
+  function contar() {
+    document.getElementById("brandCount").textContent = perfil ? perfil + " · " + todas().length + " questões" : "";
+    document.getElementById("bTrocar").hidden = !perfil;
+  }
+
+  function telaPerfil() {
+    document.body.classList.add("sem-perfil");
+    contar();
+    var dias = diasParaProva();
+    app.innerHTML = '<section class="panel"><h2>Quem vai estudar agora?</h2>' +
+      '<p class="hint">Cada pessoa tem suas próprias respostas, revisões e simulados.</p><div class="perfis">' +
+      PERFIS.map(function (n) {
+        var s = load(n);
+        var vistas = Object.keys(s.resp).length;
+        var h = hoje0();
+        var hoje = s.revs.filter(function (r) { var p = proxData(r); return p !== null && p <= h; }).length;
+        return '<button class="perfil" data-perfil="' + esc(n) + '"><span class="ini">' + esc(n.charAt(0)) + "</span><span><b>" + esc(n) + '</b><span class="note">' +
+          vistas + (vistas === 1 ? " questão vista" : " questões vistas") + (hoje ? " · " + hoje + (hoje === 1 ? " revisão" : " revisões") + " para hoje" : "") + "</span></span></button>";
+      }).join("") + "</div>" +
+      '<p class="note">' + esc(EDITAL.cargo) + " · TRF3 · VUNESP" + (dias >= 0 ? " · faltam " + dias + " dias para a prova (31/01/2027)" : "") + "</p></section>";
+    app.querySelectorAll("[data-perfil]").forEach(function (b) {
+      b.onclick = function () { entrar(b.dataset.perfil); };
+    });
+  }
+
+  function entrar(nome) {
+    perfil = nome; store = load(nome);
+    clearInterval(tick); sim = null; rv.sessao = null; rv.disc = ""; rv.asss = []; simCfg.discs = null;
+    qs.disc = ""; qs.ass = ""; qs.status = "todas";
+    document.body.classList.remove("sem-perfil");
+    contar(); novaLista(false);
+    if (location.hash !== "#questoes" && location.hash !== "") location.hash = "#questoes"; else render();
+    window.scrollTo(0, 0);
+  }
   var views = { questoes: viewQuestoes, posaula: viewPosAula, simulado: viewSimulado, desempenho: viewDesempenho, ajustes: viewAjustes };
   function render() {
+    if (!perfil) return telaPerfil();
     var tab = (location.hash || "").slice(1);
     if (!views[tab]) tab = "questoes";
     document.querySelectorAll("[data-tab]").forEach(function (a) {
@@ -763,8 +869,7 @@ details summary { cursor: pointer; font-weight: 600; }
     views[tab]();
   }
   window.addEventListener("hashchange", function () { render(); window.scrollTo(0, 0); });
-  contar();
-  novaLista(false);
+  document.getElementById("bTrocar").onclick = function () { clearInterval(tick); perfil = null; sim = null; rv.sessao = null; render(); window.scrollTo(0, 0); };
   render();
 })();
 </script>

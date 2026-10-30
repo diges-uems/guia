@@ -1,4 +1,34 @@
 /*
+  Estrutura da prova de Analista Judiciário, Área Judiciária (AJAJ)
+  Edital TRF3 nº 1/2026, banca VUNESP. Prova objetiva prevista para 31/01/2027.
+  Fonte: notícias sobre o edital. Confira a lista no Anexo VI do edital oficial.
+*/
+window.EDITAL = {
+  cargo: "Analista Judiciário · Área Judiciária",
+  blocos: [
+    { nome: "Conhecimentos Gerais", questoes: 24, peso: 1, disciplinas: [
+      "Língua Portuguesa e Raciocínio Analítico",
+      "Raciocínio Lógico-Matemático",
+      "Ética no Serviço Público e Integridade",
+      "Direitos Humanos e Acessibilidade",
+      "Informática, IA e Inovação",
+      "Sustentabilidade e Meio Ambiente"
+    ] },
+    { nome: "Conhecimentos Específicos", questoes: 36, peso: 2, disciplinas: [
+      "Direito Constitucional",
+      "Direito Administrativo",
+      "Direito Civil",
+      "Direito Processual Civil",
+      "Direito Penal",
+      "Direito Processual Penal",
+      "Direito Tributário",
+      "Direito Previdenciário",
+      "Direito Ambiental"
+    ] }
+  ]
+};
+
+/*
   Banco de questões do app.
   Todas as questões são inéditas, escritas no estilo da banca VUNESP
   (5 alternativas, A a E) com base no conteúdo usual do TRF3.
@@ -15,14 +45,14 @@
 window.QUESTOES = [
   // ---------------- LÍNGUA PORTUGUESA ----------------
   {
-    id: "pt-001", disciplina: "Língua Portuguesa", assunto: "Crase",
+    id: "pt-001", disciplina: "Língua Portuguesa e Raciocínio Analítico", assunto: "Crase",
     enunciado: "Assinale a alternativa que preenche, correta e respectivamente, as lacunas da frase: \"Refiro-me ___ servidoras que trabalham neste cartório ___ dez anos.\"",
     alternativas: ["as … a", "às … há", "às … a", "as … há", "à … há"],
     correta: 1,
     comentario: "\"Referir-se\" exige a preposição A, que se funde ao artigo feminino plural AS: \"às servidoras\". Para indicar tempo decorrido usa-se o verbo haver: \"há dez anos\"."
   },
   {
-    id: "pt-002", disciplina: "Língua Portuguesa", assunto: "Concordância verbal",
+    id: "pt-002", disciplina: "Língua Portuguesa e Raciocínio Analítico", assunto: "Concordância verbal",
     enunciado: "Assinale a alternativa em que a concordância verbal está de acordo com a norma-padrão.",
     alternativas: [
       "Haviam muitos processos aguardando despacho.",
@@ -35,7 +65,7 @@ window.QUESTOES = [
     comentario: "\"Fazer\" indicando tempo decorrido e \"haver\" no sentido de existir são impessoais e ficam no singular (faz, havia, houve). Já \"existir\" é pessoal e concorda com o sujeito: \"Existem muitas dúvidas\"."
   },
   {
-    id: "pt-003", disciplina: "Língua Portuguesa", assunto: "Colocação pronominal",
+    id: "pt-003", disciplina: "Língua Portuguesa e Raciocínio Analítico", assunto: "Colocação pronominal",
     enunciado: "Assinale a alternativa em que a colocação do pronome está de acordo com a norma-padrão.",
     alternativas: [
       "Me entregaram o ofício ontem.",
@@ -48,7 +78,7 @@ window.QUESTOES = [
     comentario: "Palavras negativas (nunca, ninguém), conjunções subordinativas (quando) e pronomes indefinidos atraem o pronome para antes do verbo (próclise). Não se inicia frase com pronome oblíquo, e com futuro do presente usa-se mesóclise: \"Entregar-lhe-ei\"."
   },
   {
-    id: "pt-004", disciplina: "Língua Portuguesa", assunto: "Regência verbal",
+    id: "pt-004", disciplina: "Língua Portuguesa e Raciocínio Analítico", assunto: "Regência verbal",
     enunciado: "Assinale a alternativa em que a regência verbal está de acordo com a norma-padrão.",
     alternativas: [
       "Prefiro trabalhar do que estudar à noite.",
@@ -61,7 +91,7 @@ window.QUESTOES = [
     comentario: "\"Aspirar\" no sentido de desejar pede a preposição A. Corrigindo as demais: preferir algo A algo; obedecer AO regulamento; esqueci o prazo (ou esqueci-me do prazo); assistir (ver) pede A: assistimos AO julgamento."
   },
   {
-    id: "pt-005", disciplina: "Língua Portuguesa", assunto: "Pontuação",
+    id: "pt-005", disciplina: "Língua Portuguesa e Raciocínio Analítico", assunto: "Pontuação",
     enunciado: "Assinale a alternativa em que a vírgula está empregada de acordo com a norma-padrão.",
     alternativas: [
       "Os candidatos aprovados, serão convocados por edital.",
@@ -74,14 +104,14 @@ window.QUESTOES = [
     comentario: "Adjunto adverbial deslocado para o início pode ser separado por vírgula. Nas outras há erro: vírgula entre sujeito e verbo (A, C), entre a conjunção e a oração (D) e entre o verbo e seu complemento (E)."
   },
   {
-    id: "pt-006", disciplina: "Língua Portuguesa", assunto: "Conjunções",
+    id: "pt-006", disciplina: "Língua Portuguesa e Raciocínio Analítico", assunto: "Conjunções",
     enunciado: "Na frase \"Embora o prazo fosse curto, a equipe concluiu o relatório\", a conjunção destacada pode ser substituída, sem alteração de sentido, por:",
     alternativas: ["Porque", "Desde que", "Ainda que", "Logo que", "Para que"],
     correta: 2,
     comentario: "\"Embora\" é conjunção concessiva, assim como \"ainda que\", \"mesmo que\" e \"conquanto\". As outras indicam causa (porque), condição (desde que), tempo (logo que) e finalidade (para que)."
   },
   {
-    id: "pt-007", disciplina: "Língua Portuguesa", assunto: "Uso dos porquês",
+    id: "pt-007", disciplina: "Língua Portuguesa e Raciocínio Analítico", assunto: "Uso dos porquês",
     enunciado: "Assinale a alternativa em que o uso de \"por que\", \"porque\", \"por quê\" ou \"porquê\" está correto.",
     alternativas: [
       "Por quê você faltou à audiência?",
@@ -96,7 +126,7 @@ window.QUESTOES = [
 
   // ---------------- RACIOCÍNIO LÓGICO ----------------
   {
-    id: "rl-001", disciplina: "Raciocínio Lógico", assunto: "Negação de proposições",
+    id: "rl-001", disciplina: "Raciocínio Lógico-Matemático", assunto: "Negação de proposições",
     enunciado: "Uma negação lógica da afirmação \"Todos os servidores do setor são pontuais\" é:",
     alternativas: [
       "Nenhum servidor do setor é pontual.",
@@ -109,7 +139,7 @@ window.QUESTOES = [
     comentario: "A negação de \"todo A é B\" é \"algum A não é B\". Basta um servidor não pontual para tornar a frase original falsa."
   },
   {
-    id: "rl-002", disciplina: "Raciocínio Lógico", assunto: "Negação de condicional",
+    id: "rl-002", disciplina: "Raciocínio Lógico-Matemático", assunto: "Negação de condicional",
     enunciado: "Uma negação lógica de \"Se o recurso foi protocolado, então o prazo foi cumprido\" é:",
     alternativas: [
       "Se o recurso não foi protocolado, então o prazo não foi cumprido.",
@@ -122,7 +152,7 @@ window.QUESTOES = [
     comentario: "A negação de \"se P, então Q\" é \"P e não Q\". Mantém a primeira parte e nega a segunda, trocando o \"se… então\" por \"e\"."
   },
   {
-    id: "rl-003", disciplina: "Raciocínio Lógico", assunto: "Equivalências lógicas",
+    id: "rl-003", disciplina: "Raciocínio Lógico-Matemático", assunto: "Equivalências lógicas",
     enunciado: "A afirmação \"Se Ana estuda, então Ana é aprovada\" é logicamente equivalente a:",
     alternativas: [
       "Se Ana é aprovada, então Ana estuda.",
@@ -135,7 +165,7 @@ window.QUESTOES = [
     comentario: "Equivalência pela contrapositiva: \"se P, então Q\" equivale a \"se não Q, então não P\". Também equivale a \"não P ou Q\" (Ana não estuda ou é aprovada)."
   },
   {
-    id: "rl-004", disciplina: "Raciocínio Lógico", assunto: "Porcentagem",
+    id: "rl-004", disciplina: "Raciocínio Lógico-Matemático", assunto: "Porcentagem",
     enunciado: "O preço de um equipamento sofreu um aumento de 20% e, em seguida, um desconto de 20% sobre o novo valor. Em relação ao preço inicial, o preço final:",
     alternativas: [
       "é igual.",
@@ -148,21 +178,21 @@ window.QUESTOES = [
     comentario: "Multiplique os fatores: 1,20 × 0,80 = 0,96. O preço final é 96% do inicial, ou seja, 4% menor."
   },
   {
-    id: "rl-005", disciplina: "Raciocínio Lógico", assunto: "Sequências",
+    id: "rl-005", disciplina: "Raciocínio Lógico-Matemático", assunto: "Sequências",
     enunciado: "Na sequência 2, 6, 18, 54, …, o próximo termo é:",
     alternativas: ["72", "108", "148", "162", "216"],
     correta: 3,
     comentario: "Cada termo é o anterior multiplicado por 3 (progressão geométrica de razão 3): 54 × 3 = 162."
   },
   {
-    id: "rl-006", disciplina: "Raciocínio Lógico", assunto: "Análise combinatória",
+    id: "rl-006", disciplina: "Raciocínio Lógico-Matemático", assunto: "Análise combinatória",
     enunciado: "De um grupo de 6 servidores, deseja-se formar uma comissão com 3 membros, sem distinção de cargos. O número de comissões diferentes possíveis é:",
     alternativas: ["18", "20", "36", "120", "216"],
     correta: 1,
     comentario: "Como a ordem não importa, é combinação: C(6,3) = 6 × 5 × 4 ÷ (3 × 2 × 1) = 120 ÷ 6 = 20."
   },
   {
-    id: "rl-007", disciplina: "Raciocínio Lógico", assunto: "Regra de três composta",
+    id: "rl-007", disciplina: "Raciocínio Lógico-Matemático", assunto: "Regra de três composta",
     enunciado: "Seis servidores analisam 120 processos em 4 dias. Mantido o mesmo ritmo, oito servidores analisarão 200 processos em:",
     alternativas: ["3 dias", "4 dias", "5 dias", "6 dias", "8 dias"],
     correta: 2,
@@ -171,42 +201,42 @@ window.QUESTOES = [
 
   // ---------------- NOÇÕES DE INFORMÁTICA ----------------
   {
-    id: "inf-001", disciplina: "Noções de Informática", assunto: "Excel",
+    id: "inf-001", disciplina: "Informática, IA e Inovação", assunto: "Excel",
     enunciado: "Em uma planilha do Microsoft Excel (versão em português), a célula A1 contém o valor 6,5. A fórmula =SE(A1>=7;\"Aprovado\";\"Reprovado\") retornará:",
     alternativas: ["Aprovado", "Reprovado", "6,5", "VERDADEIRO", "#VALOR!"],
     correta: 1,
     comentario: "A função SE testa a condição A1>=7. Como 6,5 não é maior ou igual a 7, a condição é falsa e o Excel retorna o terceiro argumento: \"Reprovado\"."
   },
   {
-    id: "inf-002", disciplina: "Noções de Informática", assunto: "Excel",
+    id: "inf-002", disciplina: "Informática, IA e Inovação", assunto: "Excel",
     enunciado: "No Microsoft Excel (versão em português), a função que conta quantas células de um intervalo não estão vazias, independentemente do tipo de conteúdo, é:",
     alternativas: ["CONT.NÚM", "CONT.VALORES", "CONT.SE", "SOMA", "CONTAR.VAZIO"],
     correta: 1,
     comentario: "CONT.VALORES conta células não vazias (texto, número, erro). CONT.NÚM conta só números, CONT.SE conta com critério e CONTAR.VAZIO conta as vazias."
   },
   {
-    id: "inf-003", disciplina: "Noções de Informática", assunto: "Excel",
+    id: "inf-003", disciplina: "Informática, IA e Inovação", assunto: "Excel",
     enunciado: "No Microsoft Excel, as células A1, A2, A3 e A4 contêm, respectivamente, 2, 4, 6 e 8. O resultado da fórmula =MÉDIA(A1:A4) é:",
     alternativas: ["4", "5", "6", "20", "8"],
     correta: 1,
     comentario: "MÉDIA soma os valores e divide pela quantidade: (2 + 4 + 6 + 8) ÷ 4 = 20 ÷ 4 = 5."
   },
   {
-    id: "inf-004", disciplina: "Noções de Informática", assunto: "Windows",
+    id: "inf-004", disciplina: "Informática, IA e Inovação", assunto: "Windows",
     enunciado: "No Microsoft Windows 10, o atalho de teclado que bloqueia imediatamente o computador, exigindo nova autenticação do usuário, é:",
     alternativas: ["Windows + D", "Windows + E", "Windows + L", "Ctrl + Alt + Tab", "Alt + F4"],
     correta: 2,
     comentario: "Windows + L bloqueia a sessão (L de lock). Windows + D mostra a área de trabalho, Windows + E abre o Explorador de Arquivos e Alt + F4 fecha a janela ativa."
   },
   {
-    id: "inf-005", disciplina: "Noções de Informática", assunto: "Correio eletrônico",
+    id: "inf-005", disciplina: "Informática, IA e Inovação", assunto: "Correio eletrônico",
     enunciado: "Um servidor precisa enviar um e-mail a vários destinatários sem que nenhum deles veja os endereços dos demais. Para isso, deve inserir os endereços no campo:",
     alternativas: ["Para", "Cc", "Cco", "Assunto", "Responder a"],
     correta: 2,
     comentario: "Cco (cópia carbono oculta) envia a mensagem sem mostrar esses destinatários aos demais. No campo Cc, todos veem quem recebeu cópia."
   },
   {
-    id: "inf-006", disciplina: "Noções de Informática", assunto: "Segurança da informação",
+    id: "inf-006", disciplina: "Informática, IA e Inovação", assunto: "Segurança da informação",
     enunciado: "Uma mensagem de e-mail que imita a comunicação de um banco e induz o usuário a clicar em um link para informar senha e dados pessoais caracteriza:",
     alternativas: ["Phishing", "Firewall", "Backup", "Spam legítimo", "Criptografia"],
     correta: 0,
@@ -398,9 +428,9 @@ window.QUESTOES = [
     comentario: "Art. 300 do CPC. Abuso do direito de defesa e prova documental suficiente são hipóteses de tutela de EVIDÊNCIA (art. 311), que dispensa a urgência."
   },
 
-  // ---------------- LEGISLAÇÃO ESPECÍFICA ----------------
+  // ---------------- LGPD, LAI E ESTATUTO DA PCD ----------------
   {
-    id: "lg-001", disciplina: "Legislação Específica", assunto: "LGPD (Lei 13.709/2018)",
+    id: "lg-001", disciplina: "Informática, IA e Inovação", assunto: "LGPD (Lei 13.709/2018)",
     enunciado: "Segundo a Lei Geral de Proteção de Dados Pessoais, NÃO é considerado dado pessoal sensível o dado referente a:",
     alternativas: [
       "origem racial ou étnica.",
@@ -413,7 +443,7 @@ window.QUESTOES = [
     comentario: "Art. 5º, II, da LGPD lista os sensíveis: origem racial ou étnica, convicção religiosa, opinião política, filiação a sindicato ou organização religiosa, filosófica ou política, saúde, vida sexual, dado genético ou biométrico. Endereço é dado pessoal comum."
   },
   {
-    id: "lg-002", disciplina: "Legislação Específica", assunto: "Lei de Acesso à Informação (Lei 12.527/2011)",
+    id: "lg-002", disciplina: "Ética no Serviço Público e Integridade", assunto: "Lei de Acesso à Informação (Lei 12.527/2011)",
     enunciado: "Pela Lei de Acesso à Informação, não sendo possível conceder o acesso imediato, o órgão deverá atender ao pedido em prazo não superior a:",
     alternativas: [
       "10 dias, prorrogável por mais 10 dias.",
@@ -426,10 +456,288 @@ window.QUESTOES = [
     comentario: "Art. 11, §§ 1º e 2º, da Lei 12.527/2011: 20 dias, prorrogáveis por mais 10, com justificativa expressa dada ao requerente."
   },
   {
-    id: "lg-003", disciplina: "Legislação Específica", assunto: "Estatuto da Pessoa com Deficiência (Lei 13.146/2015)",
+    id: "lg-003", disciplina: "Direitos Humanos e Acessibilidade", assunto: "Estatuto da Pessoa com Deficiência (Lei 13.146/2015)",
     enunciado: "Segundo o Estatuto da Pessoa com Deficiência, considera-se pessoa com deficiência aquela que tem impedimento de ___ de natureza física, mental, intelectual ou sensorial, o qual, em interação com uma ou mais barreiras, pode obstruir sua participação plena e efetiva na sociedade em igualdade de condições com as demais pessoas.",
     alternativas: ["curto prazo", "médio prazo", "longo prazo", "caráter permanente", "caráter temporário"],
     correta: 2,
     comentario: "Art. 2º da Lei 13.146/2015: impedimento de LONGO PRAZO. A lei não exige que seja permanente."
+  },
+
+  // ---------------- ÉTICA NO SERVIÇO PÚBLICO E INTEGRIDADE ----------------
+  {
+    id: "et-001", disciplina: "Ética no Serviço Público e Integridade", assunto: "Código de Ética (Decreto 1.171/1994)",
+    enunciado: "Nos termos do Código de Ética Profissional do Servidor Público Civil do Poder Executivo Federal (Decreto nº 1.171/1994), a pena aplicável ao servidor público pela Comissão de Ética é a de:",
+    alternativas: ["advertência", "suspensão", "censura", "demissão", "multa"],
+    correta: 2,
+    comentario: "Item XXII do Código: a pena aplicável pela Comissão de Ética é a censura, fundamentada em parecer assinado por todos os integrantes, com ciência do faltoso. Advertência, suspensão e demissão são penalidades disciplinares da Lei 8.112/90."
+  },
+  {
+    id: "et-002", disciplina: "Ética no Serviço Público e Integridade", assunto: "Lei Anticorrupção (Lei 12.846/2013)",
+    enunciado: "Segundo a Lei nº 12.846/2013 (Lei Anticorrupção), as pessoas jurídicas serão responsabilizadas pelos atos lesivos contra a administração pública, nacional ou estrangeira, praticados em seu interesse ou benefício:",
+    alternativas: [
+      "subjetivamente, apenas no âmbito penal.",
+      "objetivamente, nos âmbitos administrativo e civil.",
+      "subjetivamente, desde que comprovado o dolo de seus dirigentes.",
+      "objetivamente, apenas no âmbito penal.",
+      "somente se houver condenação prévia de seus dirigentes."
+    ],
+    correta: 1,
+    comentario: "Art. 2º da Lei 12.846/2013: responsabilidade OBJETIVA, nos âmbitos administrativo e civil. A responsabilização da empresa não exclui a responsabilidade individual de seus dirigentes (art. 3º)."
+  },
+
+  // ---------------- DIREITOS HUMANOS E ACESSIBILIDADE ----------------
+  {
+    id: "dh-001", disciplina: "Direitos Humanos e Acessibilidade", assunto: "Tratados internacionais",
+    enunciado: "De acordo com a Constituição Federal, os tratados e convenções internacionais sobre direitos humanos que forem aprovados, em cada Casa do Congresso Nacional, em dois turnos, por três quintos dos votos dos respectivos membros, serão equivalentes:",
+    alternativas: ["às leis ordinárias.", "às leis complementares.", "às emendas constitucionais.", "aos decretos legislativos.", "às normas supralegais."],
+    correta: 2,
+    comentario: "Art. 5º, § 3º, da CF (incluído pela EC 45/2004). Tratados de direitos humanos aprovados sem esse rito têm status supralegal, segundo o STF (abaixo da CF e acima das leis)."
+  },
+  {
+    id: "dh-002", disciplina: "Direitos Humanos e Acessibilidade", assunto: "Tratados internacionais",
+    enunciado: "Possui hierarquia equivalente à de emenda constitucional no ordenamento brasileiro, por ter sido aprovada pelo rito do art. 5º, § 3º, da Constituição Federal, a:",
+    alternativas: [
+      "Convenção Americana sobre Direitos Humanos (Pacto de San José da Costa Rica).",
+      "Declaração Universal dos Direitos Humanos.",
+      "Convenção Internacional sobre os Direitos das Pessoas com Deficiência.",
+      "Convenção sobre os Direitos da Criança.",
+      "Pacto Internacional sobre Direitos Civis e Políticos."
+    ],
+    correta: 2,
+    comentario: "A Convenção sobre os Direitos das Pessoas com Deficiência e seu Protocolo Facultativo foram os primeiros aprovados pelo rito especial (Decreto Legislativo 186/2008). O Pacto de San José tem status supralegal."
+  },
+
+  // ---------------- SUSTENTABILIDADE E MEIO AMBIENTE ----------------
+  {
+    id: "sus-001", disciplina: "Sustentabilidade e Meio Ambiente", assunto: "Agenda 2030",
+    enunciado: "A Agenda 2030 para o Desenvolvimento Sustentável, adotada pelos países-membros da ONU em 2015 e incorporada pelo Poder Judiciário brasileiro, é composta por:",
+    alternativas: [
+      "8 Objetivos de Desenvolvimento do Milênio.",
+      "10 Objetivos de Desenvolvimento Sustentável.",
+      "12 Objetivos de Desenvolvimento Sustentável.",
+      "17 Objetivos de Desenvolvimento Sustentável.",
+      "20 Objetivos de Desenvolvimento Sustentável."
+    ],
+    correta: 3,
+    comentario: "São 17 ODS e 169 metas. Os 8 Objetivos de Desenvolvimento do Milênio eram a agenda anterior (2000 a 2015)."
+  },
+  {
+    id: "sus-002", disciplina: "Sustentabilidade e Meio Ambiente", assunto: "Resíduos sólidos (Lei 12.305/2010)",
+    enunciado: "Na gestão e no gerenciamento de resíduos sólidos, a Política Nacional de Resíduos Sólidos estabelece como primeira prioridade a:",
+    alternativas: ["reciclagem", "reutilização", "não geração", "redução", "disposição final ambientalmente adequada"],
+    correta: 2,
+    comentario: "Art. 9º da Lei 12.305/2010, em ordem: não geração, redução, reutilização, reciclagem, tratamento dos resíduos e disposição final ambientalmente adequada dos rejeitos."
+  },
+
+  // ---------------- INFORMÁTICA, IA E INOVAÇÃO (nova) ----------------
+  {
+    id: "inf-007", disciplina: "Informática, IA e Inovação", assunto: "Inteligência artificial",
+    enunciado: "Em sistemas de inteligência artificial generativa, o fenômeno chamado de \"alucinação\" consiste em:",
+    alternativas: [
+      "a interrupção do sistema por falta de memória.",
+      "a geração de conteúdo falso ou inexistente apresentado com aparência plausível.",
+      "a recusa do sistema em responder perguntas jurídicas.",
+      "a cópia literal de textos protegidos por direito autoral.",
+      "o vazamento de dados pessoais do usuário."
+    ],
+    correta: 1,
+    comentario: "Alucinação é quando o modelo produz informação incorreta ou inventada (por exemplo, uma jurisprudência que não existe) com tom confiante. Por isso o uso no Judiciário exige revisão humana."
+  },
+
+  // ---------------- DIREITO CIVIL ----------------
+  {
+    id: "civ-001", disciplina: "Direito Civil", assunto: "LINDB",
+    enunciado: "Segundo a Lei de Introdução às Normas do Direito Brasileiro, salvo disposição contrária, a lei começa a vigorar em todo o país:",
+    alternativas: [
+      "na data de sua publicação.",
+      "trinta dias depois de oficialmente publicada.",
+      "quarenta e cinco dias depois de oficialmente publicada.",
+      "noventa dias depois de oficialmente publicada.",
+      "três meses depois de oficialmente publicada."
+    ],
+    correta: 2,
+    comentario: "Art. 1º da LINDB: 45 dias. Nos Estados estrangeiros, quando admitida, a obrigatoriedade começa três meses depois de publicada (art. 1º, § 1º)."
+  },
+  {
+    id: "civ-002", disciplina: "Direito Civil", assunto: "Capacidade civil",
+    enunciado: "De acordo com o Código Civil, com a redação dada pelo Estatuto da Pessoa com Deficiência, são absolutamente incapazes de exercer pessoalmente os atos da vida civil:",
+    alternativas: [
+      "os ébrios habituais e os viciados em tóxico.",
+      "os pródigos.",
+      "os menores de 16 anos.",
+      "os maiores de 16 e menores de 18 anos.",
+      "aqueles que, por causa transitória ou permanente, não puderem exprimir sua vontade."
+    ],
+    correta: 2,
+    comentario: "Art. 3º do CC: só os menores de 16 anos são absolutamente incapazes. As demais hipóteses são de incapacidade relativa (art. 4º)."
+  },
+  {
+    id: "civ-003", disciplina: "Direito Civil", assunto: "Prescrição",
+    enunciado: "Conforme o Código Civil, prescreve em três anos a pretensão de:",
+    alternativas: [
+      "reparação civil.",
+      "cobrança de dívidas líquidas constantes de instrumento público.",
+      "qualquer natureza, quando a lei não fixar prazo menor.",
+      "alimentos vencidos.",
+      "haver o pagamento de honorários de profissionais liberais."
+    ],
+    correta: 0,
+    comentario: "Art. 206, § 3º, V: reparação civil, 3 anos. Prazo geral: 10 anos (art. 205). Alimentos: 2 anos (§ 2º). Dívidas líquidas em instrumento e honorários: 5 anos (§ 5º)."
+  },
+
+  // ---------------- DIREITO PENAL ----------------
+  {
+    id: "pen-001", disciplina: "Direito Penal", assunto: "Crimes contra a Administração Pública",
+    enunciado: "O funcionário público que solicita, para si, direta ou indiretamente, ainda que fora da função ou antes de assumi-la, mas em razão dela, vantagem indevida, pratica o crime de:",
+    alternativas: ["concussão", "corrupção passiva", "prevaricação", "peculato", "corrupção ativa"],
+    correta: 1,
+    comentario: "Art. 317 do CP. Os verbos da corrupção passiva são solicitar, receber ou aceitar promessa. Na concussão (art. 316) o verbo é EXIGIR. Corrupção ativa (art. 333) é praticada pelo particular que oferece a vantagem."
+  },
+  {
+    id: "pen-002", disciplina: "Direito Penal", assunto: "Tempo do crime",
+    enunciado: "Quanto ao tempo do crime, o Código Penal considera praticado o crime no momento da ação ou omissão, ainda que outro seja o momento do resultado. Essa regra adota a teoria da:",
+    alternativas: ["ubiquidade", "atividade", "resultado", "equivalência", "consumação"],
+    correta: 1,
+    comentario: "Art. 4º do CP: teoria da atividade para o TEMPO. Para o LUGAR do crime (art. 6º), o CP adota a ubiquidade. Dica: LUTA (Lugar = Ubiquidade, Tempo = Atividade)."
+  },
+  {
+    id: "pen-003", disciplina: "Direito Penal", assunto: "Crimes contra a Administração Pública",
+    enunciado: "O funcionário público que se apropria de dinheiro público de que tem a posse em razão do cargo, em proveito próprio, pratica:",
+    alternativas: ["peculato", "apropriação indébita", "concussão", "furto qualificado", "prevaricação"],
+    correta: 0,
+    comentario: "Art. 312 do CP (peculato-apropriação). Se o funcionário reparar o dano antes da sentença irrecorrível, só no peculato CULPOSO há extinção da punibilidade (§ 3º)."
+  },
+
+  // ---------------- DIREITO PROCESSUAL PENAL ----------------
+  {
+    id: "ppe-001", disciplina: "Direito Processual Penal", assunto: "Prisão preventiva",
+    enunciado: "De acordo com o Código de Processo Penal, após as alterações da Lei nº 13.964/2019 (Pacote Anticrime), a prisão preventiva:",
+    alternativas: [
+      "pode ser decretada de ofício pelo juiz em qualquer fase da persecução penal.",
+      "não pode ser decretada de ofício pelo juiz.",
+      "só pode ser decretada após o recebimento da denúncia.",
+      "é cabível em qualquer crime, independentemente da pena.",
+      "tem prazo máximo fixo de 81 dias."
+    ],
+    correta: 1,
+    comentario: "Art. 311 do CPP: a preventiva cabe em qualquer fase, mas só a requerimento do MP, do querelante ou do assistente, ou por representação da autoridade policial. O juiz não decreta de ofício."
+  },
+  {
+    id: "ppe-002", disciplina: "Direito Processual Penal", assunto: "Inquérito policial",
+    enunciado: "Segundo o art. 10 do Código de Processo Penal, o inquérito policial deverá terminar no prazo de ___ se o indiciado estiver preso, e de ___ quando estiver solto.",
+    alternativas: ["5 dias … 15 dias", "10 dias … 30 dias", "15 dias … 30 dias", "10 dias … 60 dias", "30 dias … 90 dias"],
+    correta: 1,
+    comentario: "Regra geral do CPP: 10 dias (preso) e 30 dias (solto). Atenção: nos inquéritos da Polícia Federal, a Lei 5.010/1966 (art. 66) prevê 15 dias para preso, prorrogáveis por mais 15."
+  },
+  {
+    id: "ppe-003", disciplina: "Direito Processual Penal", assunto: "Competência da Justiça Federal",
+    enunciado: "Segundo a Constituição Federal, NÃO compete aos juízes federais processar e julgar:",
+    alternativas: [
+      "os crimes políticos.",
+      "as infrações penais praticadas em detrimento de bens, serviços ou interesse da União.",
+      "as contravenções penais, ainda que praticadas em detrimento de interesse da União.",
+      "os crimes cometidos a bordo de navios ou aeronaves, ressalvada a competência da Justiça Militar.",
+      "os crimes contra a organização do trabalho."
+    ],
+    correta: 2,
+    comentario: "Art. 109, IV, da CF exclui expressamente as contravenções. Súmula 38 do STJ: compete à Justiça Estadual julgar contravenção, mesmo que em detrimento da União."
+  },
+
+  // ---------------- DIREITO TRIBUTÁRIO ----------------
+  {
+    id: "trib-001", disciplina: "Direito Tributário", assunto: "Espécies tributárias",
+    enunciado: "Segundo o Código Tributário Nacional, as taxas têm como fato gerador:",
+    alternativas: [
+      "a valorização imobiliária decorrente de obra pública.",
+      "o exercício regular do poder de polícia ou a utilização, efetiva ou potencial, de serviço público específico e divisível.",
+      "qualquer situação independente de atividade estatal específica relativa ao contribuinte.",
+      "a prestação de serviços públicos gerais e indivisíveis, como a segurança pública.",
+      "a sanção por ato ilícito do contribuinte."
+    ],
+    correta: 1,
+    comentario: "Art. 77 do CTN. A alternativa A descreve contribuição de melhoria e a C descreve imposto (art. 16). Serviço geral e indivisível não pode ser custeado por taxa."
+  },
+  {
+    id: "trib-002", disciplina: "Direito Tributário", assunto: "Princípio da anterioridade",
+    enunciado: "O tributo que é exceção à anterioridade do exercício financeiro, mas deve respeitar a anterioridade nonagesimal (noventena), é o:",
+    alternativas: ["Imposto de Importação", "Imposto de Renda", "IPI", "IOF", "Imposto de Exportação"],
+    correta: 2,
+    comentario: "Art. 150, § 1º, da CF. O IPI pode ser cobrado no mesmo ano, mas espera 90 dias. II, IE e IOF não respeitam nenhuma das duas. O IR é o contrário: respeita a anual, mas não a noventena."
+  },
+  {
+    id: "trib-003", disciplina: "Direito Tributário", assunto: "Conceito de tributo",
+    enunciado: "De acordo com o art. 3º do Código Tributário Nacional, tributo é toda prestação pecuniária compulsória, em moeda ou cujo valor nela se possa exprimir:",
+    alternativas: [
+      "que constitua sanção de ato ilícito, instituída em lei e cobrada mediante atividade discricionária.",
+      "que não constitua sanção de ato ilícito, instituída em lei e cobrada mediante atividade administrativa plenamente vinculada.",
+      "instituída por lei ou decreto, cobrada mediante atividade discricionária.",
+      "que pode constituir sanção de ato ilícito, cobrada mediante atividade vinculada.",
+      "instituída por contrato administrativo e cobrada mediante atividade vinculada."
+    ],
+    correta: 1,
+    comentario: "Art. 3º do CTN. Multa não é tributo, pois é sanção de ato ilícito. A cobrança é plenamente vinculada: a autoridade não escolhe se cobra."
+  },
+
+  // ---------------- DIREITO PREVIDENCIÁRIO ----------------
+  {
+    id: "prev-001", disciplina: "Direito Previdenciário", assunto: "Segurados do RGPS",
+    enunciado: "É exemplo de segurado facultativo do Regime Geral de Previdência Social:",
+    alternativas: [
+      "o empregado doméstico.",
+      "o trabalhador avulso.",
+      "a pessoa que se dedica exclusivamente ao trabalho doméstico em sua própria residência, sem renda própria.",
+      "o empresário que recebe pró-labore.",
+      "o segurado especial que trabalha em regime de economia familiar."
+    ],
+    correta: 2,
+    comentario: "Facultativo é quem não exerce atividade que o torne segurado obrigatório e decide contribuir (ex.: dona de casa, estudante). Os demais são segurados obrigatórios (art. 11 da Lei 8.213/91)."
+  },
+  {
+    id: "prev-002", disciplina: "Direito Previdenciário", assunto: "Carência",
+    enunciado: "Nos termos da Lei nº 8.213/1991, independe de carência a concessão de:",
+    alternativas: [
+      "aposentadoria por idade.",
+      "auxílio por incapacidade temporária decorrente de doença comum.",
+      "pensão por morte.",
+      "aposentadoria por tempo de contribuição.",
+      "salário-maternidade da contribuinte individual."
+    ],
+    correta: 2,
+    comentario: "Art. 26, I: pensão por morte, salário-família e auxílio-acidente independem de carência. Aposentadorias: 180 contribuições. Auxílio por incapacidade comum: 12. Salário-maternidade da contribuinte individual: 10."
+  },
+  {
+    id: "prev-003", disciplina: "Direito Previdenciário", assunto: "Assistência social (BPC)",
+    enunciado: "O benefício de prestação continuada (BPC), previsto na Lei Orgânica da Assistência Social, garante um salário mínimo mensal à pessoa com deficiência e ao idoso com idade igual ou superior a ___ que comprovem não possuir meios de prover a própria manutenção nem de tê-la provida por sua família.",
+    alternativas: ["60 anos", "62 anos", "65 anos", "70 anos", "75 anos"],
+    correta: 2,
+    comentario: "Art. 20 da Lei 8.742/1993: 65 anos. O BPC é assistencial: não exige contribuição e não gera pensão por morte nem 13º."
+  },
+
+  // ---------------- DIREITO AMBIENTAL ----------------
+  {
+    id: "amb-001", disciplina: "Direito Ambiental", assunto: "Responsabilidade ambiental",
+    enunciado: "De acordo com a Constituição Federal, as condutas e atividades consideradas lesivas ao meio ambiente sujeitarão os infratores:",
+    alternativas: [
+      "pessoas físicas, apenas a sanções penais.",
+      "pessoas físicas ou jurídicas, a sanções penais e administrativas, independentemente da obrigação de reparar os danos causados.",
+      "pessoas jurídicas, apenas a sanções administrativas.",
+      "pessoas físicas ou jurídicas, a sanções administrativas, que substituem a obrigação de reparar o dano.",
+      "apenas os agentes públicos, a sanções disciplinares."
+    ],
+    correta: 1,
+    comentario: "Art. 225, § 3º, da CF. É a base da responsabilidade penal da pessoa jurídica por crime ambiental (Lei 9.605/1998). As esferas penal, administrativa e civil são independentes."
+  },
+  {
+    id: "amb-002", disciplina: "Direito Ambiental", assunto: "Responsabilidade ambiental",
+    enunciado: "Segundo a Política Nacional do Meio Ambiente (Lei nº 6.938/1981), o poluidor é obrigado a indenizar ou reparar os danos causados ao meio ambiente e a terceiros afetados por sua atividade:",
+    alternativas: [
+      "somente se comprovado o dolo.",
+      "somente se comprovada a culpa.",
+      "independentemente da existência de culpa.",
+      "apenas quando houver condenação criminal.",
+      "apenas se a atividade for ilícita."
+    ],
+    correta: 2,
+    comentario: "Art. 14, § 1º, da Lei 6.938/81: responsabilidade civil OBJETIVA. O STJ aplica a teoria do risco integral, que não admite excludentes como caso fortuito."
   }
 ];

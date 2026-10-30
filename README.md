@@ -1,6 +1,8 @@
 # Caderno TRF3
 
-App de questões no estilo QConcursos / TEC Concursos para estudar para o TRF3 (banca VUNESP).
+App de questões no estilo QConcursos / TEC Concursos para estudar para o TRF3 (banca VUNESP), cargo Analista Judiciário, Área Judiciária (edital nº 1/2026, prova em 31/01/2027).
+
+Ao abrir, escolha quem está estudando (Giovanna ou Bruno). Cada pessoa tem respostas, revisões e simulados separados.
 
 ## Como usar
 Abra `index.html` no navegador. Não precisa instalar nada.
@@ -14,6 +16,8 @@ Abra `index.html` no navegador. Não precisa instalar nada.
 O progresso fica salvo no navegador (localStorage).
 
 ## Adicionar questões
+As disciplinas seguem o edital (`window.EDITAL` no início de `questoes.js`): 24 questões de Conhecimentos Gerais (peso 1) e 36 de Específicos (peso 2).
+
 Edite `questoes.js` seguindo o formato dos blocos existentes (`correta`: 0 = A ... 4 = E).
 
-As 40 questões iniciais são inéditas, escritas no estilo VUNESP. Confira sempre a lei seca atualizada.
+As questões iniciais são inéditas, escritas no estilo VUNESP. Confira sempre a lei seca atualizada.
