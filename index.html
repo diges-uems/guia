@@ -66,10 +66,10 @@ header.top {
 .brand h1 { margin: 0; font: 700 18px/1.2 var(--f-ui); letter-spacing: -0.01em; }
 .brand h1 span { color: var(--pen); }
 .brand small { color: var(--muted); font: 500 12px var(--f-num); }
-nav.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+nav.tabs { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; }
 nav.tabs a {
-  flex: 1 0 auto; text-align: center; padding: 10px 12px; color: var(--muted);
-  text-decoration: none; font-weight: 600; font-size: 14px; border-bottom: 3px solid transparent;
+  flex: 1 0 auto; text-align: center; padding: 10px 6px; color: var(--muted); white-space: nowrap;
+  text-decoration: none; font-weight: 600; font-size: 13px; border-bottom: 3px solid transparent;
 }
 nav.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--pen); }
 main { padding-block: 16px 48px; display: grid; gap: 16px; }
@@ -77,7 +77,7 @@ main { padding-block: 16px 48px; display: grid; gap: 16px; }
 .panel { background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .grid-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
-label.f { display: grid; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.f { display: grid; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
 select, textarea, input[type="number"] {
   font: 15px var(--f-ui); color: var(--ink); background: var(--paper);
   border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; width: 100%; min-width: 0;
@@ -141,6 +141,11 @@ button:focus-visible, a:focus-visible, select:focus-visible, textarea:focus-visi
 .timer.low { color: var(--err); }
 .checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px; }
 .checks label { display: flex; gap: 8px; align-items: center; font-size: 14px; padding: 6px 0; }
+.revitem { display: flex; gap: 12px; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.revitem > div { min-width: 0; }
+.agenda { margin: 6px 0 0; padding-left: 20px; font-family: var(--f-num); font-size: 14px; }
+.badge { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--err); color: var(--sheet); font: 600 11px var(--f-num); vertical-align: 1px; }
+span.f { display: block; margin-bottom: 2px; }
 .checks input { width: 18px; height: 18px; accent-color: var(--pen); }
 
 /* Desempenho */
@@ -187,8 +192,9 @@ details summary { cursor: pointer; font-weight: 600; }
     </div>
     <nav class="tabs" aria-label="Seções">
       <a href="#questoes" data-tab="questoes">Questões</a>
+      <a href="#posaula" data-tab="posaula">Pós-aula</a>
       <a href="#simulado" data-tab="simulado">Simulado</a>
-      <a href="#desempenho" data-tab="desempenho">Desempenho</a>
+      <a href="#desempenho" data-tab="desempenho">Evolução</a>
       <a href="#ajustes" data-tab="ajustes">Ajustes</a>
     </nav>
   </div>
@@ -205,12 +211,12 @@ details summary { cursor: pointer; font-weight: 600; }
 
   // ---------- armazenamento ----------
   function load() {
-    var base = { resp: {}, sims: [], extra: [] };
+    var base = { resp: {}, sims: [], extra: [], revs: [] };
     try {
       var raw = localStorage.getItem(KEY);
       if (raw) {
         var s = JSON.parse(raw);
-        base.resp = s.resp || {}; base.sims = s.sims || []; base.extra = s.extra || [];
+        base.resp = s.resp || {}; base.sims = s.sims || []; base.extra = s.extra || []; base.revs = s.revs || [];
       }
     } catch (e) {}
     return base;
@@ -372,7 +378,7 @@ details summary { cursor: pointer; font-weight: 600; }
     if (!simCfg.discs) simCfg.discs = discs.slice();
     var disponiveis = todas().filter(function (q) { return simCfg.discs.indexOf(q.disciplina) >= 0; }).length;
     app.innerHTML = '<section class="panel"><h2>Montar simulado</h2>' +
-      '<p class="hint">Responda sem ver o gabarito. A correção sai no fim, como na prova. Tempo sugerido: 3 minutos por questão.</p>' +
+      '<p class="hint">Responda sem ver o gabarito. A correção sai no fim, como na prova. As questões são divididas igualmente entre as disciplinas marcadas e aparecem agrupadas por matéria. Tempo sugerido: 3 minutos por questão.</p>' +
       '<label class="f">Número de questões<select id="sQtd">' +
       [5, 10, 20, 30, 40].map(function (n) { return "<option" + (n === simCfg.qtd ? " selected" : "") + ">" + n + "</option>"; }).join("") +
       "</select></label>" +
@@ -393,8 +399,13 @@ details summary { cursor: pointer; font-weight: 600; }
       };
     });
     document.getElementById("sGo").onclick = function () {
-      var pool = shuffle(todas().filter(function (q) { return simCfg.discs.indexOf(q.disciplina) >= 0; }));
-      var ids = pool.slice(0, simCfg.qtd).map(function (q) { return q.id; });
+      // distribui as questões igualmente entre as disciplinas, como numa prova
+      var grupos = simCfg.discs.map(function (d) { return shuffle(todas().filter(function (q) { return q.disciplina === d; })); });
+      var ids = [];
+      while (ids.length < simCfg.qtd && grupos.some(function (g) { return g.length; })) {
+        grupos.forEach(function (g) { if (g.length && ids.length < simCfg.qtd) ids.push(g.shift().id); });
+      }
+      ids = ids.sort(function (a, b) { return simCfg.discs.indexOf(porId(a).disciplina) - simCfg.discs.indexOf(porId(b).disciplina); });
       sim = { ids: ids, resp: {}, i: 0, inicio: Date.now(), limite: simCfg.tempo ? ids.length * 180 : 0, fim: 0, confirmar: false };
       viewSimulado();
     };
@@ -499,6 +510,167 @@ details summary { cursor: pointer; font-weight: 600; }
     document.getElementById("rNovo").onclick = function () { sim = null; viewSimulado(); };
   }
 
+  // ---------- ABA PÓS-AULA ----------
+  // Revisão logo depois da aula + revisões espaçadas em 1, 7 e 30 dias.
+  var DIA = 86400000;
+  var ETAPAS = [1, 7, 30];
+  var ETAPA_NOME = ["revisão de 24h", "revisão de 7 dias", "revisão de 30 dias"];
+  var rv = { disc: "", asss: [], qtd: 10, sessao: null };
+  function hoje0() { var d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); }
+  function dataBR(t) { return new Date(t).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }); }
+  function proxData(r) { return r.feitas.length < ETAPAS.length ? r.base + ETAPAS[r.feitas.length] * DIA : null; }
+  function revsHoje() { var h = hoje0(); return store.revs.filter(function (r) { var p = proxData(r); return p !== null && p <= h; }); }
+  function revTitulo(r) { return esc(r.disc) + " · " + esc(r.asss.join(", ")); }
+
+  function iniciarRevisao(disc, asss, qtd, revId) {
+    var pool = todas().filter(function (q) { return q.disciplina === disc && asss.indexOf(q.assunto) >= 0; });
+    // erradas e não vistas primeiro
+    pool = shuffle(pool).sort(function (a, b) {
+      function peso(q) { var u = ultima(q.id); return !u ? 1 : u.c ? 2 : 0; }
+      return peso(a) - peso(b);
+    });
+    if (!pool.length) return toast("Não há questões desses assuntos");
+    rv.sessao = { ids: pool.slice(0, qtd).map(function (q) { return q.id; }), i: 0, sel: null, respondida: false, cortes: {},
+      ac: 0, marcadas: {}, disc: disc, asss: asss, revId: revId || null, fim: false };
+    viewPosAula(); window.scrollTo(0, 0);
+  }
+
+  function viewPosAula() {
+    var s = rv.sessao;
+    if (s && !s.fim) return rvRodando();
+    if (s && s.fim) return rvResumo();
+    var all = todas();
+    var discs = uniq(all.map(function (q) { return q.disciplina; })).sort();
+    if (!rv.disc) rv.disc = discs[0] || "";
+    var asssDisc = uniq(all.filter(function (q) { return q.disciplina === rv.disc; }).map(function (q) { return q.assunto; })).sort();
+    rv.asss = rv.asss.filter(function (a) { return asssDisc.indexOf(a) >= 0; });
+    var nQ = all.filter(function (q) { return q.disciplina === rv.disc && rv.asss.indexOf(q.assunto) >= 0; }).length;
+    var hoje = revsHoje();
+    var futuras = store.revs.filter(function (r) { var p = proxData(r); return p !== null && p > hoje0(); })
+      .sort(function (a, b) { return proxData(a) - proxData(b); });
+
+    var html = '<section class="panel"><h2>Revisões de hoje</h2>' +
+      (hoje.length
+        ? '<div class="bars">' + hoje.map(function (r) {
+            var atraso = proxData(r) < hoje0();
+            return '<div class="revitem"><div><b>' + revTitulo(r) + '</b><br><span class="note">' + ETAPA_NOME[r.feitas.length] +
+              (atraso ? ' · <span class="chip err">atrasada desde ' + dataBR(proxData(r)) + "</span>" : "") + "</span></div>" +
+              '<button class="primary" data-rev="' + r.id + '">Fazer</button></div>';
+          }).join("") + "</div>"
+        : '<p class="hint">Nada para revisar hoje. Depois de cada aula, registre abaixo e o app agenda as revisões.</p>') +
+      "</section>" +
+      '<section class="panel"><h2>Acabei de assistir uma aula</h2>' +
+      '<p class="hint">Marque o que foi visto na aula. Você resolve as questões agora, com gabarito na hora, e o app agenda revisões para daqui a 1, 7 e 30 dias.</p>' +
+      '<label class="f">Disciplina<select id="rDisc">' +
+      discs.map(function (d) { return "<option" + (d === rv.disc ? " selected" : "") + ">" + esc(d) + "</option>"; }).join("") + "</select></label>" +
+      '<div><span class="f">Assuntos da aula</span><div class="checks">' +
+      asssDisc.map(function (a, k) {
+        var n = all.filter(function (q) { return q.disciplina === rv.disc && q.assunto === a; }).length;
+        return '<label><input type="checkbox" id="ra' + k + '" value="' + esc(a) + '"' + (rv.asss.indexOf(a) >= 0 ? " checked" : "") + ">" + esc(a) + ' <span class="note">(' + n + ")</span></label>";
+      }).join("") + "</div></div>" +
+      '<label class="f">Máximo de questões<select id="rQtd">' +
+      [5, 10, 20].map(function (n) { return "<option" + (n === rv.qtd ? " selected" : "") + ">" + n + "</option>"; }).join("") + "</select></label>" +
+      '<div class="row"><button id="rGo" class="primary"' + (nQ ? "" : " disabled") + ">Começar revisão pós-aula</button>" +
+      '<span class="note">' + (nQ ? Math.min(nQ, rv.qtd) + " questões" : "Marque ao menos um assunto") + "</span></div></section>";
+
+    if (futuras.length) {
+      html += '<section class="panel"><h2>Próximas revisões</h2><div class="scroll"><table><thead><tr><th>Data</th><th>Aula</th><th>Etapa</th><th></th></tr></thead><tbody>' +
+        futuras.slice(0, 15).map(function (r) {
+          return '<tr><td class="n">' + dataBR(proxData(r)) + "</td><td>" + revTitulo(r) + "</td><td>" + (r.feitas.length + 1) + '/3</td><td><button class="cutbtn" data-del="' + r.id + '">remover</button></td></tr>';
+        }).join("") + "</tbody></table></div></section>";
+    }
+    app.innerHTML = html;
+    document.getElementById("rDisc").onchange = function (e) { rv.disc = e.target.value; rv.asss = []; viewPosAula(); };
+    app.querySelectorAll('input[id^="ra"]').forEach(function (c) {
+      c.onchange = function () {
+        rv.asss = Array.prototype.map.call(app.querySelectorAll('input[id^="ra"]:checked'), function (x) { return x.value; });
+        viewPosAula();
+      };
+    });
+    document.getElementById("rQtd").onchange = function (e) { rv.qtd = +e.target.value; viewPosAula(); };
+    document.getElementById("rGo").onclick = function () { iniciarRevisao(rv.disc, rv.asss.slice(), rv.qtd, null); };
+    app.querySelectorAll("[data-rev]").forEach(function (b) {
+      b.onclick = function () {
+        var r = store.revs.find(function (x) { return String(x.id) === b.dataset.rev; });
+        if (r) iniciarRevisao(r.disc, r.asss, 10, r.id);
+      };
+    });
+    app.querySelectorAll("[data-del]").forEach(function (b) {
+      b.onclick = function () {
+        store.revs = store.revs.filter(function (x) { return String(x.id) !== b.dataset.del; }); save(); toast("Revisão removida"); viewPosAula(); marcarAbas();
+      };
+    });
+  }
+
+  function rvRodando() {
+    var s = rv.sessao; var q = porId(s.ids[s.i]); var ultimaQ = s.i >= s.ids.length - 1;
+    var html = '<article class="panel" aria-live="polite">' +
+      '<div class="qmeta"><span class="num">' + (s.i + 1) + "/" + s.ids.length + '</span><span class="chip">' +
+      (s.revId ? "Revisão agendada" : "Pós-aula") + "</span><span>" + esc(q.assunto) + "</span>" +
+      '<span class="note">' + s.ac + " acertos até agora</span></div>" +
+      '<div class="track"><div class="fill" style="width:' + pct(s.i + (s.respondida ? 1 : 0), s.ids.length) + '%"></div></div>' +
+      '<p class="enun">' + esc(q.enunciado) + "</p>" + altsHTML(q, s.sel, s.cortes, s.respondida, true);
+    if (s.respondida) {
+      var ok = s.sel === q.correta;
+      html += '<div class="result ' + (ok ? "ok" : "err") + '"><strong>' + (ok ? "Você acertou." : "Você errou. Gabarito: " + LETRAS[q.correta] + ".") + "</strong>" +
+        '<p class="coment">' + esc(q.comentario || "Sem comentário.") + "</p></div>";
+    }
+    html += '<div class="navq"><button id="vSair" class="ghost">Sair</button>' +
+      (s.respondida
+        ? '<button id="vNext" class="primary grow">' + (ultimaQ ? "Ver resumo" : "Próxima questão") + "</button>"
+        : '<button id="vAns" class="primary grow"' + (s.sel === null ? " disabled" : "") + ">Responder</button>") + "</div></article>";
+    app.innerHTML = html;
+    app.querySelectorAll("[data-alt]").forEach(function (b) { b.onclick = function () { var k = +b.dataset.alt; s.sel = k; delete s.cortes[k]; rvRodando(); }; });
+    app.querySelectorAll("[data-cut]").forEach(function (b) { b.onclick = function () { var k = +b.dataset.cut; s.cortes[k] = !s.cortes[k]; if (s.cortes[k] && s.sel === k) s.sel = null; rvRodando(); }; });
+    var a = document.getElementById("vAns");
+    if (a) a.onclick = function () { s.marcadas[q.id] = s.sel; if (registrar(q, s.sel)) s.ac++; s.respondida = true; rvRodando(); };
+    var n = document.getElementById("vNext");
+    if (n) n.onclick = function () {
+      if (ultimaQ) return concluirRevisao();
+      s.i++; s.sel = null; s.respondida = false; s.cortes = {}; rvRodando(); window.scrollTo(0, 0);
+    };
+    document.getElementById("vSair").onclick = function () { rv.sessao = null; viewPosAula(); };
+  }
+
+  function concluirRevisao() {
+    var s = rv.sessao; s.fim = true;
+    var r;
+    if (s.revId) {
+      r = store.revs.find(function (x) { return x.id === s.revId; });
+      if (r) r.feitas.push(Date.now());
+    } else {
+      r = { id: Date.now(), disc: s.disc, asss: s.asss, base: hoje0(), feitas: [] };
+      store.revs.push(r);
+    }
+    s.rev = r; save(); marcarAbas(); viewPosAula(); window.scrollTo(0, 0);
+  }
+
+  function rvResumo() {
+    var s = rv.sessao; var n = s.ids.length; var r = s.rev;
+    var erradas = s.ids.filter(function (id) { return s.marcadas[id] !== porId(id).correta; });
+    var agenda = r ? ETAPAS.map(function (d, k) {
+      return k < r.feitas.length ? "" : "<li>" + dataBR(r.base + d * DIA) + " · " + ETAPA_NOME[k] + "</li>";
+    }).join("") : "";
+    app.innerHTML = '<section class="panel"><h2>' + (s.revId ? "Revisão concluída" : "Revisão pós-aula concluída") + '</h2><div class="kpis">' +
+      '<div class="kpi"><b>' + s.ac + "/" + n + "</b><span>acertos</span></div>" +
+      '<div class="kpi"><b>' + pct(s.ac, n) + "%</b><span>aproveitamento</span></div></div>" +
+      (agenda ? '<div><b>Próximas revisões agendadas</b><ul class="agenda">' + agenda + "</ul></div>" : '<p class="hint">Ciclo de revisões deste assunto completo.</p>') +
+      '<div class="row"><button id="vVolta" class="primary">Voltar</button></div></section>' +
+      (erradas.length ? '<section class="panel"><h2>Revise o que errou</h2>' + erradas.map(function (id) {
+        var q = porId(id); var a = s.marcadas[id];
+        return '<details><summary><span class="chip err">marcou ' + LETRAS[a] + " · gabarito " + LETRAS[q.correta] + "</span> " + esc(q.assunto) + "</summary>" +
+          '<div style="display:grid;gap:10px;padding-top:10px"><p class="enun">' + esc(q.enunciado) + "</p>" +
+          altsHTML(q, a, {}, true, false) + '<p class="coment">' + esc(q.comentario || "") + "</p></div></details>";
+      }).join("") + "</section>" : "");
+    document.getElementById("vVolta").onclick = function () { rv.sessao = null; viewPosAula(); };
+  }
+
+  function marcarAbas() {
+    var n = revsHoje().length;
+    var a = document.querySelector('[data-tab="posaula"]');
+    if (a) a.innerHTML = "Pós-aula" + (n ? ' <span class="badge">' + n + "</span>" : "");
+  }
+
   // ---------- ABA DESEMPENHO ----------
   function viewDesempenho() {
     var all = todas();
@@ -539,7 +711,7 @@ details summary { cursor: pointer; font-weight: 600; }
       '<section class="panel"><h2>Adicionar questões</h2><p class="hint">Cole uma lista em JSON no mesmo formato do arquivo questoes.js. Questões com código repetido são ignoradas.</p>' +
       '<label class="f">Questões em JSON<textarea id="aImport" placeholder=\'[{"id":"meu-001","disciplina":"Direito Penal","assunto":"Peculato","enunciado":"…","alternativas":["…","…","…","…","…"],"correta":0,"comentario":"…"}]\'></textarea></label>' +
       '<div class="row"><button id="aImp">Adicionar questões</button><span class="note">' + store.extra.length + " questões adicionadas por você</span></div></section>" +
-      '<section class="panel"><h2>Zerar progresso</h2><p class="hint">Apaga respostas e histórico de simulados. As questões adicionadas por você continuam.</p>' +
+      '<section class="panel"><h2>Zerar progresso</h2><p class="hint">Apaga respostas, simulados e revisões agendadas. As questões adicionadas por você continuam.</p>' +
       (resetPend
         ? '<div class="row"><button id="aResetSim" class="danger">Sim, apagar tudo</button><button id="aResetNao" class="ghost">Cancelar</button></div>'
         : '<div class="row"><button id="aReset" class="danger">Zerar progresso</button></div>') +
@@ -554,7 +726,7 @@ details summary { cursor: pointer; font-weight: 600; }
       try {
         var s = JSON.parse(document.getElementById("aBackup").value);
         if (!s || typeof s.resp !== "object") throw new Error();
-        store = { resp: s.resp || {}, sims: s.sims || [], extra: s.extra || [] }; save(); toast("Backup restaurado"); render();
+        store = { resp: s.resp || {}, sims: s.sims || [], extra: s.extra || [], revs: s.revs || [] }; save(); toast("Backup restaurado"); render();
       } catch (e) { toast("Texto inválido. Cole o backup completo, começando com {"); }
     };
     document.getElementById("aImp").onclick = function () {
@@ -573,13 +745,13 @@ details summary { cursor: pointer; font-weight: 600; }
       save(); toast(add + " questões adicionadas"); novaLista(false); viewAjustes(); contar();
     };
     var r = document.getElementById("aReset"); if (r) r.onclick = function () { resetPend = true; viewAjustes(); };
-    var rs = document.getElementById("aResetSim"); if (rs) rs.onclick = function () { store.resp = {}; store.sims = []; save(); resetPend = false; toast("Progresso zerado"); viewAjustes(); };
+    var rs = document.getElementById("aResetSim"); if (rs) rs.onclick = function () { store.resp = {}; store.sims = []; store.revs = []; save(); resetPend = false; toast("Progresso zerado"); viewAjustes(); };
     var rn = document.getElementById("aResetNao"); if (rn) rn.onclick = function () { resetPend = false; viewAjustes(); };
   }
 
   // ---------- roteamento ----------
   function contar() { document.getElementById("brandCount").textContent = todas().length + " questões"; }
-  var views = { questoes: viewQuestoes, simulado: viewSimulado, desempenho: viewDesempenho, ajustes: viewAjustes };
+  var views = { questoes: viewQuestoes, posaula: viewPosAula, simulado: viewSimulado, desempenho: viewDesempenho, ajustes: viewAjustes };
   function render() {
     var tab = (location.hash || "").slice(1);
     if (!views[tab]) tab = "questoes";
@@ -587,6 +759,7 @@ details summary { cursor: pointer; font-weight: 600; }
       if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     if (tab !== "simulado") clearInterval(tick);
+    marcarAbas();
     views[tab]();
   }
   window.addEventListener("hashchange", function () { render(); window.scrollTo(0, 0); });
